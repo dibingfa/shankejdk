@@ -1,0 +1,1 @@
+./configure --with-jobs=4 --with-milestone=fcs --with-update-version=342 --with-build-number=ga
