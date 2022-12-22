@@ -724,3 +724,7 @@ JRE_BUNDLE_DIR=$(IMAGES_OUTPUTDIR)/$(JRE_BUNDLE_SUBDIR)
 
 # Include the custom-spec.gmk file if it exists
 -include $(dir @SPEC@)/custom-spec.gmk
+
+# Include shanke jdk version information
+DISTRO_NAME=shankejdk
+DISTRO_VERSION=8.0
