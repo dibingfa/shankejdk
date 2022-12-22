@@ -1,0 +1,1 @@
+./configure --with-debug-level=slowdebug --enable-debug-symbols ZIP_DEBUGINFO_FILES=0
