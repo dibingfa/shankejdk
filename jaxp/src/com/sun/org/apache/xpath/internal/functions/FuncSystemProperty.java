@@ -3,14 +3,13 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 1999-2004 The Apache Software Foundation.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +17,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
+ * $Id: FuncSystemProperty.java,v 1.2.4.2 2005/09/14 20:18:45 jeffsuttor Exp $
+ */
 package com.sun.org.apache.xpath.internal.functions;
 
 import java.io.BufferedInputStream;
@@ -26,9 +27,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.sun.org.apache.xpath.internal.XPathContext;
+import com.sun.org.apache.xpath.internal.objects.XNumber;
 import com.sun.org.apache.xpath.internal.objects.XObject;
 import com.sun.org.apache.xpath.internal.objects.XString;
 import com.sun.org.apache.xpath.internal.res.XPATHErrorResources;
+import com.sun.org.apache.xalan.internal.utils.ObjectFactory;
 import com.sun.org.apache.xalan.internal.utils.SecuritySupport;
 
 /**
@@ -66,7 +69,7 @@ public class FuncSystemProperty extends FunctionOneArg
     // property argument is to be looked for.
     Properties xsltInfo = new Properties();
 
-    loadPropertyFile(xsltInfo);
+    loadPropertyFile(XSLT_PROPERTIES, xsltInfo);
 
     if (indexOfNSSep > 0)
     {
@@ -156,21 +159,25 @@ public class FuncSystemProperty extends FunctionOneArg
   }
 
   /**
-   * Retrieve a property bundle from a XSLT_PROPERTIES
+   * Retrieve a propery bundle from a specified file
    *
+   * @param file The string name of the property file.  The name
+   * should already be fully qualified as path/filename
    * @param target The target property bag the file will be placed into.
    */
-  private void loadPropertyFile(Properties target)
+  public void loadPropertyFile(String file, Properties target)
   {
     try
     {
-      // Use SecuritySupport class to provide privileged access to property file
-      InputStream is = SecuritySupport.getResourceAsStream(XSLT_PROPERTIES);
+      // Use SecuritySupport class to provide priveleged access to property file
+      InputStream is = SecuritySupport.getResourceAsStream(ObjectFactory.findClassLoader(),
+                                              file);
 
       // get a buffered version
-      try (BufferedInputStream bis = new BufferedInputStream(is)) {
-          target.load(bis);  // and load up the property bag from this
-      }
+      BufferedInputStream bis = new BufferedInputStream(is);
+
+      target.load(bis);  // and load up the property bag from this
+      bis.close();  // close out after reading
     }
     catch (Exception ex)
     {

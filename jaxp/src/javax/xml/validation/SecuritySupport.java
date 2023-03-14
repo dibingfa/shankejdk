@@ -28,6 +28,7 @@ package javax.xml.validation;
 import java.io.IOException;
 import java.net.URL;
 import java.security.*;
+import java.net.*;
 import java.io.*;
 import java.util.*;
 
@@ -131,6 +132,23 @@ class SecuritySupport  {
         }catch(PrivilegedActionException e){
             throw (IOException)e.getException();
         }
+    }
+
+    InputStream getResourceAsStream(final ClassLoader cl,
+                                           final String name)
+    {
+        return (InputStream)
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    InputStream ris;
+                    if (cl == null) {
+                        ris = Object.class.getResourceAsStream(name);
+                    } else {
+                        ris = cl.getResourceAsStream(name);
+                    }
+                    return ris;
+                }
+            });
     }
 
     boolean doesFileExist(final File f) {

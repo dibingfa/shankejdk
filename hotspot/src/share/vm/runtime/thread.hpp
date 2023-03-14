@@ -331,7 +331,6 @@ class Thread: public ThreadShadow {
 
   // Returns the current thread
   static inline Thread* current();
-  static inline Thread* current_or_null();
 
   // Common thread operations
   static void set_priority(Thread* thread, ThreadPriority priority);
@@ -679,16 +678,9 @@ inline Thread* Thread::current() {
          "Don't use Thread::current() inside signal handler");
 #endif
 #endif
-  Thread* current = current_or_null();
-  assert(current != NULL, "Thread::current() called on detached thread");
-  return current;
-}
-
-inline Thread* Thread::current_or_null() {
-  if (ThreadLocalStorage::is_initialized()) {
-    return ThreadLocalStorage::thread();
-  }
-  return NULL;
+  Thread* thread = ThreadLocalStorage::thread();
+  assert(thread != NULL, "just checking");
+  return thread;
 }
 
 // Name support for threads.  non-JavaThread subclasses with multiple
@@ -1785,8 +1777,8 @@ public:
 
 // Inline implementation of JavaThread::current
 inline JavaThread* JavaThread::current() {
-  Thread* thread = Thread::current();
-  assert(thread->is_Java_thread(), "just checking");
+  Thread* thread = ThreadLocalStorage::thread();
+  assert(thread != NULL && thread->is_Java_thread(), "just checking");
   return (JavaThread*)thread;
 }
 

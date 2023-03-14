@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1994, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1994, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -303,7 +303,7 @@ public class HttpClient extends NetworkClient {
             ret = kac.get(url, null);
             if (ret != null && httpuc != null &&
                 httpuc.streaming() &&
-                "POST".equals(httpuc.getRequestMethod())) {
+                httpuc.getRequestMethod() == "POST") {
                 if (!ret.available()) {
                     ret.inCache = false;
                     ret.closeServer();
@@ -696,7 +696,11 @@ public class HttpClient extends NetworkClient {
                 }  else {
                     // try once more
                     openServer();
-                    checkTunneling(httpuc);
+                    if (needsTunneling()) {
+                        MessageHeader origRequests = requests;
+                        httpuc.doTunneling();
+                        requests = origRequests;
+                    }
                     afterConnect();
                     writeRequests(requests, poster);
                     return parseHTTP(responses, pi, httpuc);
@@ -705,18 +709,6 @@ public class HttpClient extends NetworkClient {
             throw e;
         }
 
-    }
-
-    // Check whether tunnel must be open and open it if necessary
-    // (in the case of HTTPS with proxy)
-    private void checkTunneling(HttpURLConnection httpuc) throws IOException {
-        if (needsTunneling()) {
-            MessageHeader origRequests = requests;
-            PosterOutputStream origPoster = poster;
-            httpuc.doTunneling();
-            requests = origRequests;
-            poster = origPoster;
-        }
     }
 
     private boolean parseHTTPHeader(MessageHeader responses, ProgressSource pi, HttpURLConnection httpuc)
@@ -846,7 +838,11 @@ public class HttpClient extends NetworkClient {
                         closeServer();
                         cachedHttpClient = false;
                         openServer();
-                        checkTunneling(httpuc);
+                        if (needsTunneling()) {
+                            MessageHeader origRequests = requests;
+                            httpuc.doTunneling();
+                            requests = origRequests;
+                        }
                         afterConnect();
                         writeRequests(requests, poster);
                         return parseHTTP(responses, pi, httpuc);

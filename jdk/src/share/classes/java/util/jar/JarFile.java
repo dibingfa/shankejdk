@@ -385,7 +385,7 @@ class JarFile extends ZipFile {
                         }
                         if (mev == null) {
                             mev = new ManifestEntryVerifier
-                                (getManifestFromReference(), jv.manifestName);
+                                (getManifestFromReference());
                         }
                         byte[] b = getBytes(e);
                         if (b != null && b.length > 0) {

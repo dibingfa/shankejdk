@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -76,26 +76,12 @@ public final class AudioFileSoundbankReader extends SoundbankReader {
 
     public Soundbank getSoundbank(AudioInputStream ais)
             throws InvalidMidiDataException, IOException {
-        int MEGABYTE = 1048576;
-        int DEFAULT_BUFFER_SIZE = 65536;
-        int MAX_FRAME_SIZE = 1024;
         try {
             byte[] buffer;
-            int frameSize = ais.getFormat().getFrameSize();
-            if (frameSize <= 0 || frameSize > MAX_FRAME_SIZE) {
-                throw new InvalidMidiDataException("Formats with frame size "
-                        + frameSize + " are not supported");
-            }
-
-            long totalSize = ais.getFrameLength() * frameSize;
-            if (totalSize >= Integer.MAX_VALUE - 2) {
-                throw new InvalidMidiDataException(
-                        "Can not allocate enough memory to read audio data.");
-            }
-
-            if (ais.getFrameLength() == -1 || totalSize > MEGABYTE) {
+            if (ais.getFrameLength() == -1) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                byte[] buff = new byte[DEFAULT_BUFFER_SIZE - (DEFAULT_BUFFER_SIZE % frameSize)];
+                byte[] buff = new byte[1024
+                        - (1024 % ais.getFormat().getFrameSize())];
                 int ret;
                 while ((ret = ais.read(buff)) != -1) {
                     baos.write(buff, 0, ret);
@@ -103,7 +89,8 @@ public final class AudioFileSoundbankReader extends SoundbankReader {
                 ais.close();
                 buffer = baos.toByteArray();
             } else {
-                buffer = new byte[(int) totalSize];
+                buffer = new byte[(int) (ais.getFrameLength()
+                                    * ais.getFormat().getFrameSize())];
                 new DataInputStream(ais).readFully(buffer);
             }
             ModelByteBufferWavetable osc = new ModelByteBufferWavetable(

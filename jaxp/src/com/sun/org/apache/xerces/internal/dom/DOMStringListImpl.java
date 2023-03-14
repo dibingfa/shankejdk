@@ -3,12 +3,11 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2001, 2002,2004 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -21,7 +20,6 @@
 
 package com.sun.org.apache.xerces.internal.dom;
 
-import java.util.ArrayList;
 import java.util.Vector;
 
 import org.w3c.dom.DOMStringList;
@@ -37,54 +35,47 @@ import org.w3c.dom.DOMStringList;
  */
 public class DOMStringListImpl implements DOMStringList {
 
-    // A collection of DOMString values
-    private final ArrayList fStrings;
+        //A collection of DOMString values
+    private Vector fStrings;
 
     /**
      * Construct an empty list of DOMStringListImpl
      */
     public DOMStringListImpl() {
-        fStrings = new ArrayList();
+        fStrings = new Vector();
     }
 
     /**
-     * Construct a DOMStringListImpl from an ArrayList
+     * Construct an empty list of DOMStringListImpl
      */
-    public DOMStringListImpl(ArrayList params) {
+    public DOMStringListImpl(Vector params) {
         fStrings = params;
     }
 
-    /**
-     * Construct a DOMStringListImpl from a Vector
-     */
-    public DOMStringListImpl(Vector params) {
-        fStrings = new ArrayList(params);
-    }
-
-    /**
-     * @see org.w3c.dom.DOMStringList#item(int)
-     */
-    public String item(int index) {
-        final int length = getLength();
-        if (index >= 0 && index < length) {
-            return (String) fStrings.get(index);
+        /**
+         * @see org.w3c.dom.DOMStringList#item(int)
+         */
+        public String item(int index) {
+        try {
+            return (String) fStrings.elementAt(index);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
         }
-        return null;
-    }
+        }
 
-    /**
-     * @see org.w3c.dom.DOMStringList#getLength()
-     */
-    public int getLength() {
-            return fStrings.size();
-    }
+        /**
+         * @see org.w3c.dom.DOMStringList#getLength()
+         */
+        public int getLength() {
+                return fStrings.size();
+        }
 
-    /**
-     * @see org.w3c.dom.DOMStringList#contains(String)
-     */
-    public boolean contains(String param) {
-        return fStrings.contains(param);
-    }
+        /**
+         * @see org.w3c.dom.DOMStringList#contains(String)
+         */
+        public boolean contains(String param) {
+                return fStrings.contains(param) ;
+        }
 
     /**
      * DOM Internal:

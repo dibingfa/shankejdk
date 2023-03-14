@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -24,7 +24,7 @@ import com.sun.java_cup.internal.runtime.Symbol;
 import com.sun.org.apache.xalan.internal.XalanConstants;
 import com.sun.org.apache.xalan.internal.utils.ObjectFactory;
 import com.sun.org.apache.xalan.internal.utils.SecuritySupport;
-import jdk.xml.internal.XMLSecurityManager;
+import com.sun.org.apache.xalan.internal.utils.XMLSecurityManager;
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.ErrorMsg;
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.MethodType;
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type;
@@ -465,10 +465,8 @@ public class Parser implements Constants, ContentHandler {
             XMLSecurityManager securityManager =
                     (XMLSecurityManager) _xsltc.getProperty(XalanConstants.SECURITY_MANAGER);
             for (XMLSecurityManager.Limit limit : XMLSecurityManager.Limit.values()) {
-                if (limit.isSupported(XMLSecurityManager.Processor.PARSER)) {
-                    lastProperty = limit.apiProperty();
-                    reader.setProperty(lastProperty, securityManager.getLimitValueAsString(limit));
-                }
+                lastProperty = limit.apiProperty();
+                reader.setProperty(lastProperty, securityManager.getLimitValueAsString(limit));
             }
             if (securityManager.printEntityCountInfo()) {
                 lastProperty = XalanConstants.JDK_ENTITY_COUNT_INFO;
@@ -1123,9 +1121,6 @@ public class Parser implements Constants, ContentHandler {
                                             expression, parent));
         }
         catch (Exception e) {
-            if (ErrorMsg.XPATH_LIMIT.equals(e.getMessage())) {
-                throw new RuntimeException(ErrorMsg.XPATH_LIMIT);
-            }
             if (_xsltc.debug()) e.printStackTrace();
             reportError(ERROR, new ErrorMsg(ErrorMsg.XPATH_PARSER_ERR,
                                             expression, parent));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,7 +26,9 @@
 package com.sun.crypto.provider;
 
 import java.util.Arrays;
+import java.nio.ByteBuffer;
 
+import javax.crypto.MacSpi;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
@@ -34,65 +36,18 @@ import java.security.*;
 import java.security.spec.*;
 
 /**
- * This is an implementation of the HMAC algorithms as defined
- * in PKCS#12 v1.1 standard (see RFC 7292 Appendix B.4).
+ * This is an implementation of the HMAC-PBESHA1 algorithm as defined
+ * in PKCS#12 v1.0 standard.
  *
  * @author Valerie Peng
  */
-abstract class HmacPKCS12PBECore extends HmacCore {
-
-    public static final class HmacPKCS12PBE_SHA1 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA1() throws NoSuchAlgorithmException {
-            super("SHA1", 64);
-        }
-    }
-
-    public static final class HmacPKCS12PBE_SHA224 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA224() throws NoSuchAlgorithmException {
-            super("SHA-224", 64);
-        }
-    }
-
-    public static final class HmacPKCS12PBE_SHA256 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA256() throws NoSuchAlgorithmException {
-            super("SHA-256", 64);
-        }
-    }
-
-    public static final class HmacPKCS12PBE_SHA384 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA384() throws NoSuchAlgorithmException {
-            super("SHA-384", 128);
-        }
-    }
-
-    public static final class HmacPKCS12PBE_SHA512 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA512() throws NoSuchAlgorithmException {
-            super("SHA-512", 128);
-        }
-    }
-
-    public static final class HmacPKCS12PBE_SHA512_224 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA512_224() throws NoSuchAlgorithmException {
-            super("SHA-512/224", 128);
-        }
-    }
-
-    public static final class HmacPKCS12PBE_SHA512_256 extends HmacPKCS12PBECore {
-        public HmacPKCS12PBE_SHA512_256() throws NoSuchAlgorithmException {
-            super("SHA-512/256", 128);
-        }
-    }
-
-    private final String algorithm;
-    private final int bl;
+public final class HmacPKCS12PBESHA1 extends HmacCore {
 
     /**
      * Standard constructor, creates a new HmacSHA1 instance.
      */
-    public HmacPKCS12PBECore(String algorithm, int bl) throws NoSuchAlgorithmException {
-        super(algorithm, bl);
-        this.algorithm = algorithm;
-        this.bl = bl;
+    public HmacPKCS12PBESHA1() throws NoSuchAlgorithmException {
+        super("SHA1", 64);
     }
 
     /**
@@ -177,8 +132,7 @@ abstract class HmacPKCS12PBECore extends HmacCore {
                         ("IterationCount must be a positive number");
             }
             derivedKey = PKCS12PBECipherCore.derive(passwdChars, salt,
-                    iCount, engineGetMacLength(), PKCS12PBECipherCore.MAC_KEY,
-                    algorithm, bl);
+                    iCount, engineGetMacLength(), PKCS12PBECipherCore.MAC_KEY);
         } finally {
             Arrays.fill(passwdChars, '\0');
         }

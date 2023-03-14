@@ -32,7 +32,7 @@ package javax.xml.parsers;
  * or instantiated.
  *
  * @author <a href="mailto:Jeff.Suttor@Sun.com">Jeff Suttor</a>
- * @since 1.4
+ * @version $Revision: 1.7 $, $Date: 2010-11-01 04:36:09 $
  */
 
 public class FactoryConfigurationError extends Error {

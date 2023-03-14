@@ -3,14 +3,13 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2002-2004 The Apache Software Foundation.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.lang.ClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -113,6 +113,33 @@ public final class SecuritySupport {
         } catch (PrivilegedActionException e) {
             throw (FileNotFoundException) e.getException();
         }
+    }
+
+    /**
+     * Return resource using the same classloader for the ObjectFactory by
+     * default or bootclassloader when Security Manager is in place
+     */
+    public static InputStream getResourceAsStream(final String name) {
+        if (System.getSecurityManager() != null) {
+            return getResourceAsStream(null, name);
+        } else {
+            return getResourceAsStream(findClassLoader(), name);
+        }
+    }
+
+    public static InputStream getResourceAsStream(final ClassLoader cl,
+            final String name) {
+        return (InputStream) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                InputStream ris;
+                if (cl == null) {
+                    ris = Object.class.getResourceAsStream("/" + name);
+                } else {
+                    ris = cl.getResourceAsStream(name);
+                }
+                return ris;
+            }
+        });
     }
 
     /**

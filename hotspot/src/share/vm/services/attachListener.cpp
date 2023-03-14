@@ -37,7 +37,7 @@
 #include "services/diagnosticCommand.hpp"
 #include "services/heapDumper.hpp"
 
-volatile jlong AttachListener::_state = AL_NOT_INITIALIZED;
+volatile bool AttachListener::_initialized;
 
 // Implementation of "properties" command.
 //
@@ -418,7 +418,6 @@ static void attach_listener_thread_entry(JavaThread* thread, TRAPS) {
   thread->record_stack_base_and_size();
 
   if (AttachListener::pd_init() != 0) {
-    AttachListener::set_state(AL_NOT_INITIALIZED);
     return;
   }
   AttachListener::set_initialized();
@@ -426,7 +425,6 @@ static void attach_listener_thread_entry(JavaThread* thread, TRAPS) {
   for (;;) {
     AttachOperation* op = AttachListener::dequeue();
     if (op == NULL) {
-      AttachListener::set_state(AL_NOT_INITIALIZED);
       return;   // dequeue failed or shutdown
     }
 
@@ -466,8 +464,6 @@ static void attach_listener_thread_entry(JavaThread* thread, TRAPS) {
     // operation complete - send result and output to client
     op->complete(res, &st);
   }
-
-  ShouldNotReachHere();
 }
 
 bool AttachListener::has_init_error(TRAPS) {
@@ -501,7 +497,6 @@ void AttachListener::init() {
   const char thread_name[] = "Attach Listener";
   Handle string = java_lang_String::create_from_str(thread_name, THREAD);
   if (has_init_error(THREAD)) {
-    set_state(AL_NOT_INITIALIZED);
     return;
   }
 
@@ -517,7 +512,6 @@ void AttachListener::init() {
                        THREAD);
 
   if (has_init_error(THREAD)) {
-    set_state(AL_NOT_INITIALIZED);
     return;
   }
 
@@ -530,7 +524,6 @@ void AttachListener::init() {
                         thread_oop,             // ARG 1
                         THREAD);
   if (has_init_error(THREAD)) {
-    set_state(AL_NOT_INITIALIZED);
     return;
   }
 

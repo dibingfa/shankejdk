@@ -21,42 +21,43 @@
  * questions.
  */
 
-/*
+/**
  * @test
  * @bug 6558853
  * @summary  getHostAddress() on connections using IPv6 link-local addrs should have zone id
- * @library /lib/testlibrary
- * @build jdk.testlibrary.NetworkConfiguration
- * @run main B6558853
  */
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
-import java.util.Optional;
-import jdk.testlibrary.NetworkConfiguration;
+import java.util.Enumeration;
 
 public class B6558853 implements Runnable {
     private InetAddress addr = null;
     private int port = 0;
 
     public static void main(String[] args) throws Exception {
-        Optional<Inet6Address> oaddr = NetworkConfiguration.probe()
-                .ip6Addresses()
-                .filter(a -> a.isLinkLocalAddress())
-                .findFirst();
+        ServerSocket ss = new ServerSocket(0);
+        int port = ss.getLocalPort();
+        Enumeration<NetworkInterface> l = NetworkInterface.getNetworkInterfaces();
+        InetAddress dest = null;
+        while (l.hasMoreElements() && dest == null) {
+            NetworkInterface nif = l.nextElement();
+            if (!nif.isUp())
+                continue;
 
-        if (!oaddr.isPresent()) {
-            System.out.println("No suitable interface found. Exiting.");
-            return;
+            for (InterfaceAddress a : nif.getInterfaceAddresses()) {
+                if (a.getAddress() instanceof Inet6Address) {
+                    Inet6Address a6 = (Inet6Address) a.getAddress();
+                    if (a6.isLinkLocalAddress()) {
+                        dest = a6;
+                    }
+                    break;
+                }
+            }
         }
-
-        Inet6Address dest = oaddr.get();
         System.out.println("Using " + dest);
-
-        try (ServerSocket ss = new ServerSocket(0)) {
-            int port = ss.getLocalPort();
+        if (dest != null) {
             B6558853 test = new B6558853(dest, port);
             Thread thread = new Thread(test);
             thread.start();

@@ -1,15 +1,14 @@
 /*
- * Copyright (c) 2003, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 1999-2004 The Apache Software Foundation.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// $Id: XPathImpl.java,v 1.2 2005/08/16 22:41:08 jeffsuttor Exp $
 
 package com.sun.org.apache.xpath.internal.jaxp;
 
@@ -46,7 +46,6 @@ import javax.xml.parsers.*;
 import java.io.IOException;
 
 import jdk.xml.internal.JdkXmlFeatures;
-import jdk.xml.internal.XMLSecurityManager;
 import jdk.xml.internal.JdkXmlUtils;
 
 /**
@@ -55,6 +54,7 @@ import jdk.xml.internal.JdkXmlUtils;
  * of an XPath expression.
  *
  *
+ * @version $Revision: 1.10 $
  * @author  Ramesh Mandava
  */
 public class XPathImpl implements javax.xml.xpath.XPath {
@@ -72,23 +72,19 @@ public class XPathImpl implements javax.xml.xpath.XPath {
     private boolean featureSecureProcessing = false;
     private boolean overrideDefaultParser = true;
     private final JdkXmlFeatures featureManager;
-    XMLSecurityManager xmlSecMgr;
 
-    XPathImpl(XPathVariableResolver vr, XPathFunctionResolver fr) {
-        this(vr, fr, false, new JdkXmlFeatures(false), new XMLSecurityManager(true));
+    XPathImpl( XPathVariableResolver vr, XPathFunctionResolver fr ) {
+        this(vr, fr, false, new JdkXmlFeatures(false));
     }
 
-    XPathImpl(XPathVariableResolver vr, XPathFunctionResolver fr,
-            boolean featureSecureProcessing, JdkXmlFeatures featureManager,
-            XMLSecurityManager xmlSecMgr) {
+    XPathImpl( XPathVariableResolver vr, XPathFunctionResolver fr,
+            boolean featureSecureProcessing, JdkXmlFeatures featureManager) {
         this.origVariableResolver = this.variableResolver = vr;
         this.origFunctionResolver = this.functionResolver = fr;
         this.featureSecureProcessing = featureSecureProcessing;
         this.featureManager = featureManager;
         this.overrideDefaultParser = featureManager.getFeature(
                 JdkXmlFeatures.XmlFeature.JDK_OVERRIDE_PARSER);
-
-        this.xmlSecMgr = xmlSecMgr;
     }
 
     /**
@@ -191,7 +187,7 @@ public class XPathImpl implements javax.xml.xpath.XPath {
     private XObject eval(String expression, Object contextItem)
         throws javax.xml.transform.TransformerException {
         com.sun.org.apache.xpath.internal.XPath xpath = new com.sun.org.apache.xpath.internal.XPath( expression,
-            null, prefixResolver, com.sun.org.apache.xpath.internal.XPath.SELECT, null, null, xmlSecMgr);
+            null, prefixResolver, com.sun.org.apache.xpath.internal.XPath.SELECT );
         com.sun.org.apache.xpath.internal.XPathContext xpathSupport = null;
         if ( functionResolver != null ) {
             JAXPExtensionsProvider jep = new JAXPExtensionsProvider(
@@ -392,7 +388,7 @@ public class XPathImpl implements javax.xml.xpath.XPath {
         }
         try {
             com.sun.org.apache.xpath.internal.XPath xpath = new XPath (expression, null,
-                    prefixResolver, com.sun.org.apache.xpath.internal.XPath.SELECT, null, null, xmlSecMgr);
+                    prefixResolver, com.sun.org.apache.xpath.internal.XPath.SELECT );
             // Can have errorListener
             XPathExpressionImpl ximpl = new XPathExpressionImpl(xpath,
                     prefixResolver, functionResolver, variableResolver,

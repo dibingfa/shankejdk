@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,24 +39,23 @@
 
 package j2dbench.tests.cmm;
 
+import j2dbench.Group;
+import j2dbench.Option;
+import j2dbench.Result;
+import j2dbench.Test;
+import j2dbench.TestEnvironment;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.io.IOException;
 import java.io.InputStream;
 
-import j2dbench.Group;
-import j2dbench.Option;
-import j2dbench.Result;
-import j2dbench.Test;
-import j2dbench.TestEnvironment;
-
 public class CMMTests extends Test {
 
     protected static Group cmmRoot;
     protected static Group cmmOptRoot;
     protected static Option csList;
-    protected static Option usePlatformProfiles;
+    protected static Option usePlatfromProfiles;
 
     public static void init() {
         cmmRoot = new Group("cmm", "Color Management Benchmarks");
@@ -65,9 +64,9 @@ public class CMMTests extends Test {
         cmmOptRoot = new Group(cmmRoot, "opts", "General Options");
 
         /*
-        usePlatformProfiles =
-                new Option.Enable(cmmOptRoot, "csPlatform",
-                        "Use Platform Profiles", false);
+        usePlatfromProfiles =
+                new Option.Enable(cmmOptRoot, "csPlatfrom",
+                        "Use Platfrom Profiles", false);
         */
         int[] colorspaces = new int[] {
             ColorSpace.CS_sRGB,
@@ -93,10 +92,10 @@ public class CMMTests extends Test {
 
     protected static ColorSpace getColorSpace(TestEnvironment env) {
         ColorSpace cs;
-        boolean usePlatform = true; //(Boolean)env.getModifier(usePlatformProfiles);
+        Boolean usePlatfrom = true; //(Boolean)env.getModifier(usePlatfromProfiles);
 
         int cs_code = env.getIntValue(csList);
-        if (usePlatform) {
+        if (usePlatfrom) {
             cs = ColorSpace.getInstance(cs_code);
         } else {
             String resource = "profiles/";
@@ -137,14 +136,17 @@ public class CMMTests extends Test {
         addDependencies(cmmOptRoot, true);
     }
 
+    @Override
     public Object initTest(TestEnvironment te, Result result) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void runTest(Object o, int i) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void cleanupTest(TestEnvironment te, Object o) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

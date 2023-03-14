@@ -96,7 +96,7 @@ class JarInputStream extends ZipInputStream {
             closeEntry();
             if (doVerify) {
                 jv = new JarVerifier(e.getName(), bytes);
-                mev = new ManifestEntryVerifier(man, jv.manifestName);
+                mev = new ManifestEntryVerifier(man);
             }
             return (JarEntry)super.getNextEntry();
         }

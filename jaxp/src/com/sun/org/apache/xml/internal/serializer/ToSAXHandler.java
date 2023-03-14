@@ -22,7 +22,7 @@
  */
 package com.sun.org.apache.xml.internal.serializer;
 
-import java.util.ArrayList;
+import java.util.Vector;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -234,9 +234,9 @@ public abstract class ToSAXHandler extends SerializerBase
     /**
      * Does nothing. The setting of CDATA section elements has an impact on
      * stream serializers.
-     * @see SerializationHandler#setCdataSectionElements(java.util.ArrayList<String>)
+     * @see SerializationHandler#setCdataSectionElements(java.util.Vector)
      */
-    public void setCdataSectionElements(ArrayList<String> URI_and_localNames)
+    public void setCdataSectionElements(Vector URI_and_localNames)
     {
         // do nothing
     }

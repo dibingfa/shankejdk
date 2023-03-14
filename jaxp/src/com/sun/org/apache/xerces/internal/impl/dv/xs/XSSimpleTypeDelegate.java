@@ -39,6 +39,7 @@ import com.sun.org.apache.xerces.internal.xs.XSTypeDefinition;
  *
  * @xerces.internal
  *
+ * @version $Id: XSSimpleTypeDelegate.java,v 1.3 2010-11-01 04:39:47 joehw Exp $
  */
 public class XSSimpleTypeDelegate
     implements XSSimpleType {

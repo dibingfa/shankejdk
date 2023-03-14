@@ -97,6 +97,7 @@ import org.xml.sax.InputSource;
  * @xerces.internal
  *
  * @author Neil Graham, IBM
+ * @version $Id: XMLSchemaLoader.java,v 1.10 2010-11-01 04:39:55 joehw Exp $
  */
 
 public class XMLSchemaLoader implements XMLGrammarLoader, XMLComponent,

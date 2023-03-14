@@ -3,11 +3,9 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the  "License");
+ * Copyright 2001-2004 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -25,11 +23,8 @@
 package com.sun.org.apache.xml.internal.serializer;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.ArrayList;
+import java.util.Vector;
 
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
 
@@ -113,12 +108,12 @@ public abstract class SerializerBase
     /**
      * The System ID for the doc type.
      */
-    protected String m_doctypeSystem;
+    private String m_doctypeSystem;
 
     /**
      * The public ID for the doc type.
      */
-    protected String m_doctypePublic;
+    private String m_doctypePublic;
 
     /**
      * Flag to tell that we need to add the doctype decl, which we can't do
@@ -127,9 +122,15 @@ public abstract class SerializerBase
     boolean m_needToOutputDocTypeDecl = true;
 
     /**
+     * The character encoding.  Must match the encoding used for the
+     * printWriter.
+     */
+    private String m_encoding = null;
+
+    /**
      * Tells if we should write the XML declaration.
      */
-    protected boolean m_shouldNotWriteXMLHeader = false;
+    private boolean m_shouldNotWriteXMLHeader = false;
 
     /**
      * The standalone value for the doctype.
@@ -158,18 +159,25 @@ public abstract class SerializerBase
     /**
      * Tells the XML version, for writing out to the XML decl.
      */
-    protected String m_version = null;
+    private String m_version = null;
 
     /**
      * The mediatype.  Not used right now.
      */
-    protected String m_mediatype;
+    private String m_mediatype;
 
     /**
      * The transformer that was around when this output handler was created (if
      * any).
      */
     private Transformer m_transformer;
+
+    /**
+     * Pairs of local names and corresponding URIs of CDATA sections. This list
+     * comes from the cdata-section-elements attribute. Every second one is a
+     * local name, and every other second one is the URI for the local name.
+     */
+    protected Vector m_cdataSectionElements = null;
 
     /**
      * Namespace support, that keeps track of currently defined
@@ -530,16 +538,16 @@ public abstract class SerializerBase
      */
     public String getEncoding()
     {
-        return getOutputProperty(OutputKeys.ENCODING);
+        return m_encoding;
     }
 
    /**
      * Sets the character encoding coming from the xsl:output encoding stylesheet attribute.
      * @param m_encoding the character encoding
      */
-    public void setEncoding(String encoding)
+    public void setEncoding(String m_encoding)
     {
-        setOutputProperty(OutputKeys.ENCODING,encoding);
+        this.m_encoding = m_encoding;
     }
 
     /**
@@ -549,8 +557,7 @@ public abstract class SerializerBase
      */
     public void setOmitXMLDeclaration(boolean b)
     {
-        String val = b ? "yes":"no";
-        setOutputProperty(OutputKeys.OMIT_XML_DECLARATION,val);
+        this.m_shouldNotWriteXMLHeader = b;
     }
 
 
@@ -581,7 +588,7 @@ public abstract class SerializerBase
       */
     public void setDoctypePublic(String doctypePublic)
     {
-        setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctypePublic);
+        this.m_doctypePublic = doctypePublic;
     }
 
 
@@ -603,7 +610,7 @@ public abstract class SerializerBase
       */
     public void setDoctypeSystem(String doctypeSystem)
     {
-        setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctypeSystem);
+        this.m_doctypeSystem = doctypeSystem;
     }
 
     /** Set the value coming from the xsl:output doctype-public and doctype-system stylesheet properties
@@ -614,8 +621,8 @@ public abstract class SerializerBase
      */
     public void setDoctype(String doctypeSystem, String doctypePublic)
     {
-        setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctypeSystem);
-        setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctypePublic);
+        this.m_doctypeSystem = doctypeSystem;
+        this.m_doctypePublic = doctypePublic;
     }
 
     /**
@@ -627,9 +634,12 @@ public abstract class SerializerBase
      */
     public void setStandalone(String standalone)
     {
-        setOutputProperty(OutputKeys.STANDALONE, standalone);
+        if (standalone != null)
+        {
+            m_standaloneWasSpecified = true;
+            setStandaloneInternal(standalone);
+        }
     }
-
     /**
      * Sets the XSL standalone attribute, but does not remember if this is a
      * default or explicite setting.
@@ -690,7 +700,7 @@ public abstract class SerializerBase
      */
     public void setVersion(String version)
     {
-        setOutputProperty(OutputKeys.VERSION, version);
+        m_version = version;
     }
 
     /**
@@ -702,7 +712,7 @@ public abstract class SerializerBase
      */
     public void setMediaType(String mediaType)
     {
-        setOutputProperty(OutputKeys.MEDIA_TYPE,mediaType);
+        m_mediatype = mediaType;
     }
 
     /**
@@ -731,8 +741,7 @@ public abstract class SerializerBase
      */
     public void setIndent(boolean doIndent)
     {
-        String val = doIndent ? "yes":"no";
-        setOutputProperty(OutputKeys.INDENT,val);
+        m_doIndent = doIndent;
     }
 
     /**
@@ -775,6 +784,59 @@ public abstract class SerializerBase
     public DOMSerializer asDOMSerializer() throws IOException
     {
         return this;
+    }
+
+    /**
+     * Push a boolean state based on if the name of the current element
+     * is found in the list of qnames.  A state is only pushed if
+     * there were some cdata-section-names were specified.
+     * <p>
+     * Hidden parameters are the vector of qualified elements specified in
+     * cdata-section-names attribute, and the m_cdataSectionStates stack
+     * onto which whether the current element is in the list is pushed (true or
+     * false). Other hidden parameters are the current elements namespaceURI,
+     * localName and qName
+     */
+    protected boolean isCdataSection()
+    {
+
+        boolean b = false;
+
+        if (null != m_cdataSectionElements)
+        {
+            if (m_elemContext.m_elementLocalName == null)
+                m_elemContext.m_elementLocalName =
+                    getLocalName(m_elemContext.m_elementName);
+            if (m_elemContext.m_elementURI == null)
+            {
+                String prefix = getPrefixPart(m_elemContext.m_elementName);
+                if (prefix != null)
+                    m_elemContext.m_elementURI =
+                        m_prefixMap.lookupNamespace(prefix);
+
+            }
+
+            if ((null != m_elemContext.m_elementURI)
+                && m_elemContext.m_elementURI.length() == 0)
+                m_elemContext.m_elementURI = null;
+
+            int nElems = m_cdataSectionElements.size();
+
+            // loop through 2 at a time, as these are pairs of URI and localName
+            for (int i = 0; i < nElems; i += 2)
+            {
+                String uri = (String) m_cdataSectionElements.elementAt(i);
+                String loc = (String) m_cdataSectionElements.elementAt(i + 1);
+                if (loc.equals(m_elemContext.m_elementLocalName)
+                    && subPartMatch(m_elemContext.m_elementURI, uri))
+                {
+                    b = true;
+
+                    break;
+                }
+            }
+        }
+        return b;
     }
 
     /**
@@ -1250,11 +1312,12 @@ public abstract class SerializerBase
     private void resetSerializerBase()
     {
         this.m_attributes.clear();
-        this.m_StringOfCDATASections = null;
+        this.m_cdataSectionElements = null;
         this.m_elemContext = new ElemContext();
         this.m_doctypePublic = null;
         this.m_doctypeSystem = null;
         this.m_doIndent = false;
+        this.m_encoding = null;
         this.m_indentAmount = 0;
         this.m_inEntityRef = false;
         this.m_inExternalDTD = false;
@@ -1336,333 +1399,4 @@ public abstract class SerializerBase
         // A particular sub-class of SerializerBase provides the implementation (if desired)
     }
 
-
-    /**
-     * The CDATA section names stored in a whitespace separateed list with
-     * each element being a word of the form "{uri}localName" This list
-     * comes from the cdata-section-elements attribute.
-     *
-     * This field replaces m_cdataSectionElements Vector.
-     */
-    protected String m_StringOfCDATASections = null;
-
-    boolean m_docIsEmpty = true;
-    void initCdataElems(String s)
-    {
-        if (s != null)
-        {
-            int max = s.length();
-
-            // true if we are in the middle of a pair of curly braces that delimit a URI
-            boolean inCurly = false;
-
-            // true if we found a URI but haven't yet processed the local name
-            boolean foundURI = false;
-
-            StringBuilder buf = new StringBuilder();
-            String uri = null;
-            String localName = null;
-
-            // parse through string, breaking on whitespaces.  I do this instead
-            // of a tokenizer so I can track whitespace inside of curly brackets,
-            // which theoretically shouldn't happen if they contain legal URLs.
-            for (int i = 0; i < max; i++)
-            {
-                char c = s.charAt(i);
-
-                if (Character.isWhitespace(c))
-                {
-                    if (!inCurly)
-                    {
-                        if (buf.length() > 0)
-                        {
-                            localName = buf.toString();
-                            if (!foundURI)
-                                uri = "";
-                            addCDATAElement(uri,localName);
-                            buf.setLength(0);
-                            foundURI = false;
-                        }
-                        continue;
-                    }
-                    else
-                        buf.append(c); // add whitespace to the URI
-                }
-                else if ('{' == c) // starting a URI
-                    inCurly = true;
-                else if ('}' == c)
-                {
-                    // we just ended a URI
-                    foundURI = true;
-                    uri = buf.toString();
-                    buf.setLength(0);
-                    inCurly = false;
-                }
-                else
-                {
-                    // append non-whitespace, non-curly to current URI or localName being gathered.
-                    buf.append(c);
-                }
-
-            }
-
-            if (buf.length() > 0)
-            {
-                // We have one last localName to process.
-                localName = buf.toString();
-                if (!foundURI)
-                    uri = "";
-                addCDATAElement(uri,localName);
-            }
-        }
-    }
-
-    protected java.util.HashMap<String, HashMap<String, String>> m_CdataElems = null;
-    private void addCDATAElement(String uri, String localName)
-    {
-        if (m_CdataElems == null) {
-            m_CdataElems = new java.util.HashMap<>();
-        }
-
-        HashMap<String,String> h = m_CdataElems.get(localName);
-        if (h == null) {
-            h = new HashMap<>();
-            m_CdataElems.put(localName,h);
-        }
-        h.put(uri,uri);
-
-    }
-
-
-    /**
-     * Return true if nothing has been sent to this result tree yet.
-     * <p>
-     * This is not a public API.
-     *
-     * @xsl.usage internal
-     */
-    public boolean documentIsEmpty() {
-        // If we haven't called startDocument() yet, then this document is empty
-        return m_docIsEmpty && (m_elemContext.m_currentElemDepth == 0);
-    }
-
-    /**
-     * Return true if the current element in m_elemContext
-     * is a CDATA section.
-     * CDATA sections are specified in the <xsl:output> attribute
-     * cdata-section-names or in the JAXP equivalent property.
-     * In any case the format of the value of such a property is:
-     * <pre>
-     * "{uri1}localName1 {uri2}localName2 . . . "
-     * </pre>
-     *
-     * <p>
-     * This method is not a public API, but is only used internally by the serializer.
-     */
-    protected boolean isCdataSection() {
-        boolean b = false;
-
-        if (null != m_StringOfCDATASections) {
-            if (m_elemContext.m_elementLocalName == null) {
-                String localName =  getLocalName(m_elemContext.m_elementName);
-                m_elemContext.m_elementLocalName = localName;
-            }
-
-            if ( m_elemContext.m_elementURI == null) {
-
-                m_elemContext.m_elementURI = getElementURI();
-            }
-            else if ( m_elemContext.m_elementURI.length() == 0) {
-                if ( m_elemContext.m_elementName == null) {
-                    m_elemContext.m_elementName = m_elemContext.m_elementLocalName;
-                    // leave URI as "", meaning in no namespace
-                }
-                else if (m_elemContext.m_elementLocalName.length() < m_elemContext.m_elementName.length()){
-                    // We were told the URI was "", yet the name has a prefix since the name is longer than the localname.
-                    // So we will fix that incorrect information here.
-                    m_elemContext.m_elementURI = getElementURI();
-                }
-            }
-
-            HashMap<String, String> h = null;
-            if (m_CdataElems != null) {
-                h = m_CdataElems.get(m_elemContext.m_elementLocalName);
-            }
-            if (h != null) {
-                Object obj = h.get(m_elemContext.m_elementURI);
-                if (obj != null)
-                    b = true;
-            }
-
-        }
-        return b;
-    }
-
-    /**
-     * Before this call m_elementContext.m_elementURI is null,
-     * which means it is not yet known. After this call it
-     * is non-null, but possibly "" meaning that it is in the
-     * default namespace.
-     *
-     * @return The URI of the element, never null, but possibly "".
-     */
-    private String getElementURI() {
-        String uri = null;
-        // At this point in processing we have received all the
-        // namespace mappings
-        // As we still don't know the elements namespace,
-        // we now figure it out.
-
-        String prefix = getPrefixPart(m_elemContext.m_elementName);
-
-        if (prefix == null) {
-            // no prefix so lookup the URI of the default namespace
-            uri = m_prefixMap.lookupNamespace("");
-        } else {
-            uri = m_prefixMap.lookupNamespace(prefix);
-        }
-        if (uri == null) {
-            // We didn't find the namespace for the
-            // prefix ... ouch, that shouldn't happen.
-            // This is a hack, we really don't know
-            // the namespace
-            uri = EMPTYSTRING;
-        }
-
-        return uri;
-    }
-
-
-    /**
-     * Get the value of an output property,
-     * the explicit value, if any, otherwise the
-     * default value, if any, otherwise null.
-     */
-    public String getOutputProperty(String name) {
-        String val = getOutputPropertyNonDefault(name);
-        // If no explicit value, try to get the default value
-        if (val == null)
-            val = getOutputPropertyDefault(name);
-        return val;
-
-    }
-    /**
-     * Get the value of an output property,
-     * not the default value. If there is a default
-     * value, but no non-default value this method
-     * will return null.
-     * <p>
-     *
-     */
-    public String getOutputPropertyNonDefault(String name) {
-        return getProp(name,false);
-    }
-
-    /**
-     * Get the default value of an xsl:output property,
-     * which would be null only if no default value exists
-     * for the property.
-     */
-    public String getOutputPropertyDefault(String name) {
-        return getProp(name, true);
-    }
-
-    /**
-     * Set the value for the output property, typically from
-     * an xsl:output element, but this does not change what
-     * the default value is.
-     */
-    public void setOutputProperty(String name, String val) {
-        setProp(name,val,false);
-    }
-
-    /**
-     * Set the default value for an output property, but this does
-     * not impact any explicitly set value.
-     */
-    public void setOutputPropertyDefault(String name, String val) {
-        setProp(name,val,true);
-
-    }
-
-    /**
-     * A mapping of keys to explicitly set values, for example if
-     * and <xsl:output/> has an "encoding" attribute, this
-     * map will have what that attribute maps to.
-     */
-    private HashMap<String, String> m_OutputProps;
-    /**
-     * A mapping of keys to default values, for example if
-     * the default value of the encoding is "UTF-8" then this
-     * map will have that "encoding" maps to "UTF-8".
-     */
-    private HashMap<String, String> m_OutputPropsDefault;
-
-    Set<String> getOutputPropDefaultKeys() {
-        return m_OutputPropsDefault.keySet();
-    }
-    Set<String> getOutputPropKeys() {
-        return m_OutputProps.keySet();
-    }
-
-    private String getProp(String name, boolean defaultVal) {
-        if (m_OutputProps == null) {
-            m_OutputProps = new HashMap<>();
-            m_OutputPropsDefault = new HashMap<>();
-        }
-
-        String val;
-        if (defaultVal)
-            val = m_OutputPropsDefault.get(name);
-        else
-            val = m_OutputProps.get(name);
-
-        return val;
-    }
-    /**
-     *
-     * @param name The name of the property, e.g. "{http://myprop}indent-tabs" or "indent".
-     * @param val The value of the property, e.g. "4"
-     * @param defaultVal true if this is a default value being set for the property as
-     * opposed to a user define on, set say explicitly in the stylesheet or via JAXP
-     */
-    void setProp(String name, String val, boolean defaultVal) {
-        if (m_OutputProps == null) {
-            m_OutputProps = new HashMap<>();
-            m_OutputPropsDefault = new HashMap<>();
-        }
-
-        if (defaultVal)
-            m_OutputPropsDefault.put(name,val);
-        else {
-            if (OutputKeys.CDATA_SECTION_ELEMENTS.equals(name) && val != null) {
-                initCdataElems(val);
-                String oldVal = m_OutputProps.get(name);
-                String newVal;
-                if (oldVal == null)
-                    newVal = oldVal + ' ' + val;
-                else
-                    newVal = val;
-                m_OutputProps.put(name,newVal);
-            }
-            else {
-                m_OutputProps.put(name,val);
-            }
-        }
-    }
-
-    /**
-     * Get the first char of the local name
-     * @param name Either a local name, or a local name
-     * preceeded by a uri enclosed in curly braces.
-     */
-    static char getFirstCharLocName(String name) {
-        final char first;
-        int i = name.indexOf('}');
-        if (i < 0)
-            first = name.charAt(0);
-        else
-            first = name.charAt(i+1);
-        return first;
-    }
 }

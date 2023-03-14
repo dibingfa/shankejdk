@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,11 +25,6 @@
 
 package java.lang;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.io.StreamCorruptedException;
 
 /**
  * A mutable sequence of characters.  This class provides an API compatible
@@ -80,7 +75,7 @@ import java.io.StreamCorruptedException;
  */
 public final class StringBuilder
     extends AbstractStringBuilder
-    implements Serializable, CharSequence
+    implements java.io.Serializable, CharSequence
 {
 
     /** use serialVersionUID for interoperability */
@@ -423,26 +418,22 @@ public final class StringBuilder
      *             characters currently stored in the string builder, in which
      *             case extra characters are ignored.
      */
-    private void writeObject(ObjectOutputStream s)
-        throws IOException {
+    private void writeObject(java.io.ObjectOutputStream s)
+        throws java.io.IOException {
         s.defaultWriteObject();
         s.writeInt(count);
         s.writeObject(value);
     }
 
     /**
-     * readObject is called to restore the state of the StringBuilder from
+     * readObject is called to restore the state of the StringBuffer from
      * a stream.
      */
-    private void readObject(ObjectInputStream s)
-        throws IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream s)
+        throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
-        int c = s.readInt();
+        count = s.readInt();
         value = (char[]) s.readObject();
-        if (c < 0 || c > value.length) {
-            throw new StreamCorruptedException("count value invalid");
-        }
-        count = c;
     }
 
 }

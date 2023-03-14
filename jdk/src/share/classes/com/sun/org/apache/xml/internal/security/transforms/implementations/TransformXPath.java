@@ -147,7 +147,11 @@ public class TransformXPath extends TransformSpi {
                 }
                 return 0;
             } catch (TransformerException e) {
-                throw new XMLSecurityRuntimeException("signature.Transform.XPathError");
+                Object[] eArgs = {currentNode};
+                throw new XMLSecurityRuntimeException("signature.Transform.node", eArgs, e);
+            } catch (Exception e) {
+                Object[] eArgs = {currentNode, currentNode.getNodeType()};
+                throw new XMLSecurityRuntimeException("signature.Transform.nodeAndType",eArgs, e);
             }
         }
 

@@ -45,6 +45,7 @@ import java.util.HashMap;
  * @xerces.internal
  *
  * @author Neil Graham, IBM
+ * @version $Id: XSDFACM.java,v 1.9 2010/08/06 23:49:43 joehw Exp $
  */
 public class XSDFACM
     implements XSCMValidator {

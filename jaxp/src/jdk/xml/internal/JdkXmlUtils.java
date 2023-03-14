@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,6 +25,7 @@
 
 package jdk.xml.internal;
 
+import com.sun.org.apache.xalan.internal.utils.XMLSecurityManager;
 import com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;
 import com.sun.org.apache.xerces.internal.impl.Constants;
 import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
@@ -249,40 +250,19 @@ public class JdkXmlUtils {
     }
 
     /**
-     * Returns the external declaration for a DTD construct.
+     * Returns the character to be used to quote the input content. Between
+     * single and double quotes, this method returns the one that is not found
+     * in the input. Returns double quote by default.
      *
-     * @param publicId the public identifier
-     * @param systemId the system identifier
-     * @return a DTD external declaration
+     * @param s the input string
+     * @return returns the quote not found in the input
      */
-    public static String getDTDExternalDecl(String publicId, String systemId) {
-        StringBuilder sb = new StringBuilder();
-        if (null != publicId) {
-            sb.append(" PUBLIC ");
-            sb.append(quoteString(publicId));
+    public static char getQuoteChar(String s) {
+        if (s != null && s.indexOf('"') > -1) {
+            return '\'';
+        } else {
+            return '"';
         }
-
-        if (null != systemId) {
-            if (null == publicId) {
-                sb.append(" SYSTEM ");
-            } else {
-                sb.append(" ");
-            }
-
-            sb.append(quoteString(systemId));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Returns the input string quoted with double quotes or single ones if
-     * there is a double quote in the string.
-     * @param s the input string, can not be null
-     * @return the quoted string
-     */
-    private static String quoteString(String s) {
-        char c = (s.indexOf('"') > -1) ? '\'' : '"';
-        return c + s + c;
     }
 
     private static XMLReader getXMLReaderWSAXFactory(boolean overrideDefaultParser) {

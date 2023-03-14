@@ -3,12 +3,11 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2005 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -20,7 +19,7 @@
  */
 package com.sun.org.apache.xerces.internal.xpointer;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 
 import com.sun.org.apache.xerces.internal.impl.XMLErrorReporter;
 import com.sun.org.apache.xerces.internal.util.SymbolTable;
@@ -38,8 +37,10 @@ import com.sun.org.apache.xerces.internal.xni.parser.XMLErrorHandler;
  *
  * @xerces.internal
  *
+ * @version $Id: ElementSchemePointer.java,v 1.4 2009/06/11 23:51:50 joehw Exp $
+ *
  */
-final class ElementSchemePointer implements XPointerPart {
+class ElementSchemePointer implements XPointerPart {
 
     // Fields
 
@@ -345,17 +346,15 @@ final class ElementSchemePointer implements XPointerPart {
 
                 // Donot check for empty elements if the empty element is
                 // a child of a found parent element
-                if (checkMatch()) {
-                    if (!fIsElementFound) {
+                //if (!fIsElementFound) {
+                    if (checkMatch()) {
+                        fIsElementFound = true;
                         fWasOnlyEmptyElementFound = true;
                     } else {
-                        fWasOnlyEmptyElementFound = false;
+                        fIsElementFound = false;
                     }
-                    fIsElementFound = true;
-                } else {
-                    fIsElementFound = false;
-                    fWasOnlyEmptyElementFound = false;
-                }
+                //}
+
             }
         }
 
@@ -497,6 +496,7 @@ final class ElementSchemePointer implements XPointerPart {
      * @xerces.internal
      *
      * @author Neil Delima, IBM
+     * @version $Id: ElementSchemePointer.java,v 1.4 2009/06/11 23:51:50 joehw Exp $
      *
      */
     private final class Tokens {
@@ -526,7 +526,7 @@ final class ElementSchemePointer implements XPointerPart {
 
         private SymbolTable fSymbolTable;
 
-        private HashMap<Integer, String> fTokenNames = new HashMap<>();
+        private Hashtable fTokenNames = new Hashtable();
 
         /**
          * Constructor
@@ -548,7 +548,16 @@ final class ElementSchemePointer implements XPointerPart {
          * @return String The token string
          */
         private String getTokenString(int token) {
-            return fTokenNames.get(new Integer(token));
+            return (String) fTokenNames.get(new Integer(token));
+        }
+
+        /**
+         * Returns the token String
+         * @param token The index of the token
+         * @return String The token string
+         */
+        private Integer getToken(int token) {
+            return (Integer) fTokenNames.get(new Integer(token));
         }
 
         /**
@@ -557,8 +566,7 @@ final class ElementSchemePointer implements XPointerPart {
          * @param token The token string
          */
         private void addToken(String tokenStr) {
-            String str = fTokenNames.get(tokenStr);
-            Integer tokenInt = str == null ? null : Integer.parseInt(str);
+            Integer tokenInt = (Integer) fTokenNames.get(tokenStr);
             if (tokenInt == null) {
                 tokenInt = new Integer(fTokenNames.size());
                 fTokenNames.put(tokenInt, tokenStr);
@@ -654,6 +662,7 @@ final class ElementSchemePointer implements XPointerPart {
      *
      * @xerces.internal
      *
+     * @version $Id: ElementSchemePointer.java,v 1.4 2009/06/11 23:51:50 joehw Exp $
      */
     private class Scanner {
 

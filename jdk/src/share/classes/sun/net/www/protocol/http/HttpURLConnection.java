@@ -1177,12 +1177,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection {
                             if (p != Proxy.NO_PROXY) {
                                 sel.connectFailed(uri, p.address(), ioex);
                                 if (!it.hasNext()) {
-                                    if (logger.isLoggable(PlatformLogger.Level.FINEST)) {
-                                        logger.finest("Retrying with proxy: " + p.toString());
-                                    }
-                                    http = getNewHttpClient(url, p, connectTimeout, false);
-                                    http.setReadTimeout(readTimeout);
-                                    break;
+                                    throw ioex;
                                 }
                             } else {
                                 throw ioex;
@@ -2815,7 +2810,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection {
         /* must save before calling close */
         reuseClient = http;
         InputStream is = http.getInputStream();
-        if (!method.equals("HEAD") || tunnelState == TunnelState.SETUP) {
+        if (!method.equals("HEAD")) {
             try {
                 /* we want to read the rest of the response without using the
                  * hurry mechanism, because that would close the connection

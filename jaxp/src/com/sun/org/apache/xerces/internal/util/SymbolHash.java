@@ -28,6 +28,7 @@ package com.sun.org.apache.xerces.internal.util;
  * The hash code uses the same algorithm as SymbolTable class.
  *
  * @author Elena Litani
+ * @version $Id: SymbolHash.java,v 1.7 2010-11-01 04:40:14 joehw Exp $
  */
 public class SymbolHash {
 

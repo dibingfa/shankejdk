@@ -60,6 +60,7 @@ import java.util.Map;
  * @author Andy Clark, IBM
  * @author Neil Graham, IBM
  *
+ * @version $Id: DTDGrammar.java,v 1.4 2010/08/11 07:18:37 joehw Exp $
  * @LastModified: Feb 2020
  */
 public class DTDGrammar

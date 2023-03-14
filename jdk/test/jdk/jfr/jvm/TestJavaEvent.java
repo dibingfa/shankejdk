@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -39,7 +39,6 @@ import jdk.jfr.Recording;
 import jdk.jfr.ValueDescriptor;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
-import jdk.test.lib.Utils;
 
 /**
  * @test TestGetThreadId
@@ -118,7 +117,7 @@ public class TestJavaEvent {
 
         r.stop();
         // prettyPrint();
-        File file = Utils.createTempFile("test", ".jfr").toFile();
+        File file = File.createTempFile("test", ".jfr");
         r.dump(file.toPath());
         int eventCount = 0;
         for (RecordedEvent e : RecordingFile.readAllEvents(file.toPath())) {

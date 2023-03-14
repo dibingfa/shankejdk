@@ -49,6 +49,7 @@ import java.util.Map;
  *
  * @author Neil Graham, IBM
  *
+ * @version $Id: XMLGrammarPreparser.java,v 1.7 2010-11-01 04:40:10 joehw Exp $
  */
 public class XMLGrammarPreparser {
 

@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.LockSupport;
-
-import jdk.internal.misc.TerminatingThreadLocal;
 import sun.nio.ch.Interruptible;
 import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
@@ -756,9 +754,6 @@ class Thread implements Runnable {
      * a chance to clean up before it actually exits.
      */
     private void exit() {
-        if (threadLocals != null && TerminatingThreadLocal.REGISTRY.isPresent()) {
-            TerminatingThreadLocal.threadTerminated();
-        }
         if (group != null) {
             group.threadTerminated(this);
             group = null;

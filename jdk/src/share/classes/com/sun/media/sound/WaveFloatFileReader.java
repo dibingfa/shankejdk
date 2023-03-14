@@ -89,10 +89,6 @@ public final class WaveFloatFileReader extends AudioFileReader {
                 samplerate = chunk.readUnsignedInt();
                 /* framerate = */chunk.readUnsignedInt();
                 framesize = chunk.readUnsignedShort();
-                if (framesize == 0) {
-                    throw new UnsupportedAudioFileException(
-                            "Can not process audio format with 0 frame size");
-                }
                 bits = chunk.readUnsignedShort();
             }
             if (chunk.getFormat().equals("data")) {

@@ -187,7 +187,7 @@ final class JSONWriter extends EventPrintWriter {
     private void printDataStructureName(String text) {
         printIndent();
         print("\"");
-        printEscaped(text);
+        print(text);
         print("\": ");
     }
 

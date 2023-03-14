@@ -83,11 +83,7 @@ final class XMLWriter extends EventPrintWriter {
     }
 
     private void printAttribute(String name, String value) {
-        print(" ");
-        print(name); // Only known strings
-        print("=\"");
-        printEscaped(value);
-        print("\"");
+        print(" ", name, "=\"", value, "\"");
     }
 
     public void printObject(RecordedObject struct) {

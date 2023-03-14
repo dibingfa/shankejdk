@@ -37,6 +37,7 @@ import java.util.ArrayList;
  *
  * @author Elena Litani, Lisa Martin
  * @author IBM
+ * @version $Id: XSEmptyCM.java,v 1.7 2009/07/28 15:18:11 spericas Exp $
  */
 public class XSEmptyCM  implements XSCMValidator {
 

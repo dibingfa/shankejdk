@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+* Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
 * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 *
 * This code is free software; you can redistribute it and/or modify it
@@ -31,9 +31,7 @@ import java.lang.System;
 import java.lang.Thread;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 
 /*
  * @test
@@ -55,6 +53,10 @@ public class FullScreenAfterSplash {
 
     public static void main(String[] args) throws Exception {
 
+        if (OSInfo.getOSType() != OSInfo.OSType.MACOSX) {
+            System.out.println("The test is applicable only to Mac OS X. Passed");
+            return;
+        }
         try {
             //Move the mouse out, because it could interfere with the test.
             Robot r = new Robot();
@@ -65,10 +67,7 @@ public class FullScreenAfterSplash {
             sleep();
 
             Point fullScreenButtonPos = frame.getLocation();
-            if(System.getProperty("os.version").equals("10.9"))
-                fullScreenButtonPos.translate(frame.getWidth() - 10, frame.getHeight()/2);
-            else
-                fullScreenButtonPos.translate(55,frame.getHeight()/2);
+            fullScreenButtonPos.translate(frame.getWidth() - 10, 10);
             r.mouseMove(fullScreenButtonPos.x, fullScreenButtonPos.y);
 
             //Cant use waitForIdle for full screen transition.

@@ -54,7 +54,7 @@ Symbol* fieldDescriptor::generic_signature() const {
     }
   }
   assert(false, "should never happen");
-  return vmSymbols::void_signature(); // return a default value (for code analyzers)
+  return NULL;
 }
 
 AnnotationArray* fieldDescriptor::annotations() const {

@@ -3,12 +3,11 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2005 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -18,11 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.sun.org.apache.xerces.internal.xpointer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import com.sun.org.apache.xerces.internal.impl.Constants;
 import com.sun.org.apache.xerces.internal.impl.XMLErrorReporter;
@@ -34,7 +32,6 @@ import com.sun.org.apache.xerces.internal.xinclude.XIncludeNamespaceSupport;
 import com.sun.org.apache.xerces.internal.xni.Augmentations;
 import com.sun.org.apache.xerces.internal.xni.QName;
 import com.sun.org.apache.xerces.internal.xni.XMLAttributes;
-import com.sun.org.apache.xerces.internal.xni.XMLDocumentHandler;
 import com.sun.org.apache.xerces.internal.xni.XMLString;
 import com.sun.org.apache.xerces.internal.xni.XNIException;
 import com.sun.org.apache.xerces.internal.xni.parser.XMLConfigurationException;
@@ -67,8 +64,8 @@ public final class XPointerHandler extends XIncludeHandler implements
         XPointerProcessor {
 
     // Fields
-    // An ArrayList of XPointerParts
-    protected ArrayList<XPointerPart> fXPointerParts = null;
+    // A Vector of XPointerParts
+    protected Vector fXPointerParts = null;
 
     // The current XPointerPart
     protected XPointerPart fXPointerPart = null;
@@ -105,7 +102,7 @@ public final class XPointerHandler extends XIncludeHandler implements
     public XPointerHandler() {
         super();
 
-        fXPointerParts = new ArrayList<>();
+        fXPointerParts = new Vector();
         fSymbolTable = new SymbolTable();
     }
 
@@ -113,15 +110,11 @@ public final class XPointerHandler extends XIncludeHandler implements
             XMLErrorHandler errorHandler, XMLErrorReporter errorReporter) {
         super();
 
-        fXPointerParts = new ArrayList<>();
+        fXPointerParts = new Vector();
         fSymbolTable = symbolTable;
         fErrorHandler = errorHandler;
         fXPointerErrorReporter = errorReporter;
         //fErrorReporter = errorReporter; // The XInclude ErrorReporter
-    }
-
-    public void setDocumentHandler(XMLDocumentHandler handler) {
-        fDocumentHandler = handler;
     }
 
     // ************************************************************************
@@ -307,7 +300,7 @@ public final class XPointerHandler extends XIncludeHandler implements
             // in the XPointer expression until a matching element is found.
             for (int i = 0; i < fXPointerParts.size(); i++) {
 
-                fXPointerPart = fXPointerParts.get(i);
+                fXPointerPart = (XPointerPart) fXPointerParts.get(i);
 
                 if (fXPointerPart.resolveXPointer(element, attributes, augs,
                         event)) {
@@ -437,11 +430,11 @@ public final class XPointerHandler extends XIncludeHandler implements
     }
 
     /**
-     * Returns an ArrayList of XPointerPart objects
+     * Returns a Vector of XPointerPart objects
      *
-     * @return An ArrayList of XPointerPart objects.
+     * @return A Vector of XPointerPart objects.
      */
-    public ArrayList<XPointerPart> getPointerParts() {
+    public Vector getPointerParts() {
         return fXPointerParts;
     }
 
@@ -487,7 +480,7 @@ public final class XPointerHandler extends XIncludeHandler implements
 
         private SymbolTable fSymbolTable;
 
-        private HashMap<Integer, String> fTokenNames = new HashMap<>();
+        private Hashtable fTokenNames = new Hashtable();
 
         /**
          * Constructor
@@ -515,7 +508,7 @@ public final class XPointerHandler extends XIncludeHandler implements
          * @return String The token string
          */
         private String getTokenString(int token) {
-            return fTokenNames.get(new Integer(token));
+            return (String) fTokenNames.get(new Integer(token));
         }
 
         /**
@@ -524,8 +517,7 @@ public final class XPointerHandler extends XIncludeHandler implements
          * @param token The token string
          */
         private void addToken(String tokenStr) {
-            String str = fTokenNames.get(tokenStr);
-            Integer tokenInt = str == null ? null : Integer.parseInt(str);
+            Integer tokenInt = (Integer) fTokenNames.get(tokenStr);
             if (tokenInt == null) {
                 tokenInt = new Integer(fTokenNames.size());
                 fTokenNames.put(tokenInt, tokenStr);

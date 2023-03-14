@@ -63,9 +63,7 @@ public class ManifestEntryVerifier {
     ArrayList<byte[]> manifestHashes;
 
     private String name = null;
-
-    private final String manifestFileName; // never null
-    private final Manifest man;
+    private Manifest man;
 
     private boolean skip = true;
 
@@ -76,12 +74,11 @@ public class ManifestEntryVerifier {
     /**
      * Create a new ManifestEntryVerifier object.
      */
-    public ManifestEntryVerifier(Manifest man, String manifestFileName)
+    public ManifestEntryVerifier(Manifest man)
     {
         createdDigests = new HashMap<String, MessageDigest>(11);
         digests = new ArrayList<MessageDigest>();
         manifestHashes = new ArrayList<byte[]>();
-        this.manifestFileName = manifestFileName;
         this.man = man;
     }
 
@@ -190,6 +187,7 @@ public class ManifestEntryVerifier {
      * the first time we have verified this object, remove its
      * code signers from sigFileSigners and place in verifiedSigners.
      *
+     *
      */
     public CodeSigner[] verify(Hashtable<String, CodeSigner[]> verifiedSigners,
                 Hashtable<String, CodeSigner[]> sigFileSigners)
@@ -211,6 +209,7 @@ public class ManifestEntryVerifier {
             getParams(verifiedSigners, sigFileSigners);
 
         for (int i=0; i < digests.size(); i++) {
+
             MessageDigest digest = digests.get(i);
             if (params != null) {
                 try {
@@ -252,8 +251,7 @@ public class ManifestEntryVerifier {
     /**
      * Get constraints parameters for JAR. The constraints should be
      * checked against all code signers. Returns the parameters,
-     * or null if the signers for this entry have already been checked
-     * or there are no signers for this entry.
+     * or null if the signers for this entry have already been checked.
      */
     private JarConstraintsParameters getParams(
             Map<String, CodeSigner[]> verifiedSigners,
@@ -264,20 +262,17 @@ public class ManifestEntryVerifier {
         // the signers of the JAR. But if it doesn't then we need to fallback
         // and check verifiedSigners to see if the signers of this entry have
         // been checked already.
-        if (verifiedSigners.containsKey(manifestFileName)) {
+        if (verifiedSigners.containsKey(JarFile.MANIFEST_NAME)) {
             if (verifiedSigners.size() > 1) {
                 // this means we already checked it previously
                 return null;
             } else {
                 return new JarConstraintsParameters(
-                    verifiedSigners.get(manifestFileName));
+                    verifiedSigners.get(JarFile.MANIFEST_NAME));
             }
         } else {
-            if (debug != null) {
-                debug.println(manifestFileName + " not present in verifiedSigners");
-            }
             CodeSigner[] signers = sigFileSigners.get(name);
-            if (signers == null || verifiedSigners.containsValue(signers)) {
+            if (verifiedSigners.containsValue(signers)) {
                 return null;
             } else {
                 return new JarConstraintsParameters(signers);

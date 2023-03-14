@@ -31,6 +31,7 @@ import com.sun.org.apache.xerces.internal.xs.datatypes.ObjectList;
  *
  * @xerces.internal
  *
+ * @version $Id: ObjectListImpl.java,v 1.2 2010-10-26 23:01:04 joehw Exp $
  */
 public final class ObjectListImpl extends AbstractList implements ObjectList {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,8 +25,6 @@
 
 package java.util;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -1274,12 +1272,12 @@ public class IdentityHashMap<K,V>
      *          IdentityHashMap.  The key-value mappings are emitted in no
      *          particular order.
      */
-    private void writeObject(ObjectOutputStream s)
+    private void writeObject(java.io.ObjectOutputStream s)
         throws java.io.IOException  {
-        // Write out size (number of mappings) and any hidden stuff
+        // Write out and any hidden stuff
         s.defaultWriteObject();
 
-        // Write out size again (maintained for backward compatibility)
+        // Write out size (number of Mappings)
         s.writeInt(size);
 
         // Write out keys and values (alternating)
@@ -1297,20 +1295,18 @@ public class IdentityHashMap<K,V>
      * Reconstitutes the <tt>IdentityHashMap</tt> instance from a stream (i.e.,
      * deserializes it).
      */
-    private void readObject(ObjectInputStream s)
+    private void readObject(java.io.ObjectInputStream s)
         throws java.io.IOException, ClassNotFoundException  {
-        // Size (number of mappings) is written to the stream twice
-        // Read first size value and ignore it
-        s.readFields();
+        // Read in any hidden stuff
+        s.defaultReadObject();
 
-        // Read second size value, validate and assign to size field
+        // Read in size (number of Mappings)
         int size = s.readInt();
         if (size < 0)
             throw new java.io.StreamCorruptedException
                 ("Illegal mappings count: " + size);
         int cap = capacity(size);
-        SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, cap*2);
-        this.size = size;
+        SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, cap);
         init(cap);
 
         // Read the keys and values, and put the mappings in the table

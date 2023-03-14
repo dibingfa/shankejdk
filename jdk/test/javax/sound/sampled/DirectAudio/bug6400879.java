@@ -26,10 +26,9 @@
  * @bug 6400879 7100140
  * @summary Tests that Start/Stop sequence doesn't hang
  * @author Alexey Menkov
- * @run main/othervm bug6400879
+ * @run main bug6400879
+ * @key intermittent
  */
-
-import java.util.concurrent.TimeUnit;
 
 import javax.sound.sampled.*;
 
@@ -51,16 +50,16 @@ public class bug6400879 extends Thread {
         long prevTime = currentTimeMillis();
         while (pThis.isAlive()) {
             if (pThis.loopCounter == prevLoop) {
-                long delay = currentTimeMillis() - prevTime;
-                if (delay > BLOCK_TIMEOUT) {
-                    // blocked?
-                    log("The test is slow, delay = " + delay);
+                if (currentTimeMillis() - prevTime > BLOCK_TIMEOUT) {
+                    // block!
+                    log("Test FAILED.");
+                    throw new RuntimeException("Test FAILED: thread has been blocked!");
                 }
             } else {
                 prevLoop = pThis.loopCounter;
                 prevTime = currentTimeMillis();
             }
-            delay(1000);    // sleep for 1 sec
+            delay(500);    // sleep for 0.5 sec
         }
         log("Test sucessfully passed.");
     }
@@ -112,7 +111,8 @@ public class bug6400879 extends Thread {
     // helper routines
     static long startTime = currentTimeMillis();
     static long currentTimeMillis() {
-        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
+        //return System.nanoTime() / 1000000L;
+        return System.currentTimeMillis();
     }
     static void log(String s) {
         long time = currentTimeMillis() - startTime;

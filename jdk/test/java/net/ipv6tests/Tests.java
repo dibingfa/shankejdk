@@ -27,10 +27,7 @@ import java.util.*;
 
 public class Tests {
 
-    static final boolean isWindows =
-            System.getProperty("os.name").startsWith("Windows");
-    static final boolean isMacOS =
-            System.getProperty("os.name").contains("OS X");
+    static boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
     /**
      * performs a simple exchange of data between the two sockets
@@ -281,8 +278,6 @@ public class Tests {
                         String dName = nic.getDisplayName();
                         if (dName != null && dName.contains("Teredo"))
                             continue;
-                    } else if (isMacOS && nic.getName().contains("awdl")) {
-                        continue;
                     }
                     try {
                         if (nic.isUp() && !nic.isLoopback())

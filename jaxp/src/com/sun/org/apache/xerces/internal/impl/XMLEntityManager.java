@@ -51,7 +51,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 import javax.xml.stream.XMLInputFactory;
-import java.util.StringTokenizer;
 
 
 /**
@@ -81,7 +80,7 @@ import java.util.StringTokenizer;
  * @author K.Venugopal SUN Microsystems
  * @author Neeraj Bajaj SUN Microsystems
  * @author Sunitha Reddy SUN Microsystems
- * @LastModified: Aug 2021
+ * @version $Id: XMLEntityManager.java,v 1.17 2010-11-01 04:39:41 joehw Exp $
  */
 public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
 
@@ -1007,14 +1006,12 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
         }
 
         // do default resolution
-        //this works for both stax & Xerces, if staxInputSource is null,
-        //it means parser need to revert to default resolution
+        //this works for both stax & Xerces, if staxInputSource is null, it means parser need to revert to default resolution
         if (staxInputSource == null) {
             // REVISIT: when systemId is null, I think we should return null.
             //          is this the right solution? -SG
             //if (systemId != null)
-            staxInputSource = new StaxXMLInputSource(
-                    new XMLInputSource(publicId, literalSystemId, baseSystemId), false);
+            staxInputSource = new StaxXMLInputSource(new XMLInputSource(publicId, literalSystemId, baseSystemId));
         }else if(staxInputSource.hasXMLStreamOrXMLEventReader()){
             //Waiting for the clarification from EG. - nb
         }
@@ -1143,7 +1140,7 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
             externalEntity = (Entity.ExternalEntity)entity;
             extLitSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getLiteralSystemId() : null);
             extBaseSysId = (externalEntity.entityLocation != null ? externalEntity.entityLocation.getBaseSystemId() : null);
-            expandedSystemId = expandSystemId(extLitSysId, extBaseSysId, fStrictURI);
+            expandedSystemId = expandSystemId(extLitSysId, extBaseSysId);
             boolean unparsed = entity.isUnparsed();
             boolean parameter = entityName.startsWith("%");
             boolean general = !parameter;
@@ -1220,13 +1217,15 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
              */
             xmlInputSource = staxInputSource.getXMLInputSource() ;
             if (!fISCreatedByResolver) {
-                String accessError = SecuritySupport.checkAccess(expandedSystemId,
-                        fAccessExternalDTD, Constants.ACCESS_EXTERNAL_ALL);
-                if (accessError != null) {
-                    fErrorReporter.reportError(this.getEntityScanner(),XMLMessageFormatter.XML_DOMAIN,
-                            "AccessExternalEntity",
-                            new Object[] { SecuritySupport.sanitizePath(expandedSystemId), accessError },
-                            XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                //let the not-LoadExternalDTD or not-SupportDTD process to handle the situation
+                if (fLoadExternalDTD) {
+                    String accessError = SecuritySupport.checkAccess(expandedSystemId, fAccessExternalDTD, Constants.ACCESS_EXTERNAL_ALL);
+                    if (accessError != null) {
+                        fErrorReporter.reportError(this.getEntityScanner(),XMLMessageFormatter.XML_DOMAIN,
+                                "AccessExternalEntity",
+                                new Object[] { SecuritySupport.sanitizePath(expandedSystemId), accessError },
+                                XMLErrorReporter.SEVERITY_FATAL_ERROR);
+                    }
                 }
             }
         }
@@ -1845,7 +1844,7 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
         userDir = userDir.replace(separator, '/');
 
         int len = userDir.length(), ch;
-        StringBuilder buffer = new StringBuilder(len*3);
+        StringBuffer buffer = new StringBuffer(len*3);
         // change C:/blah to /C:/blah
         if (len >= 2 && userDir.charAt(1) == ':') {
             ch = Character.toUpperCase(userDir.charAt(0));
@@ -1913,61 +1912,6 @@ public class XMLEntityManager implements XMLComponent, XMLEntityResolver {
         gUserDirURI = new URI("file", "", buffer.toString(), null, null);
 
         return gUserDirURI;
-    }
-
-    public static OutputStream createOutputStream(String uri) throws IOException {
-        // URI was specified. Handle relative URIs.
-        final String expanded = XMLEntityManager.expandSystemId(uri, null, true);
-        final URL url = new URL(expanded != null ? expanded : uri);
-        OutputStream out = null;
-        String protocol = url.getProtocol();
-        String host = url.getHost();
-        // Use FileOutputStream if this URI is for a local file.
-        if (protocol.equals("file")
-                && (host == null || host.length() == 0 || host.equals("localhost"))) {
-            File file = new File(getPathWithoutEscapes(url.getPath()));
-            if (!file.exists()) {
-                File parent = file.getParentFile();
-                if (parent != null && !parent.exists()) {
-                    parent.mkdirs();
-                }
-            }
-            out = new FileOutputStream(file);
-        }
-        // Try to write to some other kind of URI. Some protocols
-        // won't support this, though HTTP should work.
-        else {
-            URLConnection urlCon = url.openConnection();
-            urlCon.setDoInput(false);
-            urlCon.setDoOutput(true);
-            urlCon.setUseCaches(false); // Enable tunneling.
-            if (urlCon instanceof HttpURLConnection) {
-                // The DOM L3 REC says if we are writing to an HTTP URI
-                // it is to be done with an HTTP PUT.
-                HttpURLConnection httpCon = (HttpURLConnection) urlCon;
-                httpCon.setRequestMethod("PUT");
-            }
-            out = urlCon.getOutputStream();
-        }
-        return out;
-    }
-
-    private static String getPathWithoutEscapes(String origPath) {
-        if (origPath != null && origPath.length() != 0 && origPath.indexOf('%') != -1) {
-            // Locate the escape characters
-            StringTokenizer tokenizer = new StringTokenizer(origPath, "%");
-            StringBuilder result = new StringBuilder(origPath.length());
-            int size = tokenizer.countTokens();
-            result.append(tokenizer.nextToken());
-            for(int i = 1; i < size; ++i) {
-                String token = tokenizer.nextToken();
-                // Decode the 2 digit hexadecimal number following % in '%nn'
-                result.append((char)Integer.valueOf(token.substring(0, 2), 16).intValue());
-                result.append(token.substring(2));
-            }
-            return result.toString();
-        }
-        return origPath;
     }
 
     /**

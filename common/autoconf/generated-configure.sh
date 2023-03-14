@@ -880,7 +880,6 @@ DSYMUTIL
 IS_GNU_TIME
 TIME
 STAT
-GIT
 HG
 READELF
 LDD
@@ -1194,7 +1193,6 @@ ZIP
 LDD
 READELF
 HG
-GIT
 STAT
 TIME
 DSYMUTIL
@@ -2089,7 +2087,6 @@ Some influential environment variables:
   LDD         Override default value for LDD
   READELF     Override default value for READELF
   HG          Override default value for HG
-  GIT         Override default value for GIT
   STAT        Override default value for STAT
   TIME        Override default value for TIME
   DSYMUTIL    Override default value for DSYMUTIL
@@ -3237,7 +3234,7 @@ apt_help() {
     pulse)
       PKGHANDLER_COMMAND="sudo apt-get install libpulse-dev" ;;
     x11)
-      PKGHANDLER_COMMAND="sudo apt-get install libx11-dev libxext-dev libxrender-dev libxtst-dev libxt-dev" ;;
+      PKGHANDLER_COMMAND="sudo apt-get install libX11-dev libxext-dev libxrender-dev libxtst-dev libxt-dev" ;;
     ccache)
       PKGHANDLER_COMMAND="sudo apt-get install ccache" ;;
   esac
@@ -3631,7 +3628,7 @@ TOOLCHAIN_DESCRIPTION_xlc="IBM XL C/C++"
 
 
 #
-# Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -3657,7 +3654,7 @@ TOOLCHAIN_DESCRIPTION_xlc="IBM XL C/C++"
 
 ################################################################################
 # The order of these defines the priority by which we try to find them.
-VALID_VS_VERSIONS="2010 2012 2013 2015 2017 2019"
+VALID_VS_VERSIONS="2010 2012 2013 2015 2017"
 
 VS_DESCRIPTION_2010="Microsoft Visual Studio 2010"
 VS_VERSION_INTERNAL_2010=100
@@ -3715,20 +3712,6 @@ VS_SDK_INSTALLDIR_2017=
 VS_VS_PLATFORM_NAME_2017="v141"
 VS_SDK_PLATFORM_NAME_2017=
 
-VS_DESCRIPTION_2019="Microsoft Visual Studio 2019"
-VS_VERSION_INTERNAL_2019=141
-VS_MSVCR_2019=vcruntime140.dll
-VS_MSVCP_2019=msvcp140.dll
-VS_ENVVAR_2019="VS160COMNTOOLS"
-VS_USE_UCRT_2019="true"
-VS_VS_INSTALLDIR_2019="Microsoft Visual Studio/2019"
-VS_EDITIONS_2019="BuildTools Community Professional Enterprise"
-VS_SDK_INSTALLDIR_2019=
-VS_VS_PLATFORM_NAME_2019="v142"
-VS_SDK_PLATFORM_NAME_2019=
-VS_SUPPORTED_2019=false
-VS_TOOLSET_SUPPORTED_2019=false
-
 ################################################################################
 
 
@@ -3770,7 +3753,7 @@ VS_TOOLSET_SUPPORTED_2019=false
 #CUSTOM_AUTOCONF_INCLUDE
 
 # Do not change or remove the following line, it is needed for consistency checks:
-DATE_WHEN_GENERATED=1657976677
+DATE_WHEN_GENERATED=1634290654
 
 ###############################################################################
 #
@@ -18062,196 +18045,6 @@ $as_echo "$tool_specified" >&6; }
   # Publish this variable in the help.
 
 
-  if test "x$GIT" = x; then
-    # The variable is not set by user, try to locate tool using the code snippet
-    for ac_prog in git
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_path_GIT+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  case $GIT in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_GIT="$GIT" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_GIT="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-GIT=$ac_cv_path_GIT
-if test -n "$GIT"; then
-  { $as_echo "$as_me:$LINENO: result: $GIT" >&5
-$as_echo "$GIT" >&6; }
-else
-  { $as_echo "$as_me:$LINENO: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$GIT" && break
-done
-
-  else
-    # The variable is set, but is it from the command line or the environment?
-
-    # Try to remove the string !GIT! from our list.
-    try_remove_var=${CONFIGURE_OVERRIDDEN_VARIABLES//!GIT!/}
-    if test "x$try_remove_var" = "x$CONFIGURE_OVERRIDDEN_VARIABLES"; then
-      # If it failed, the variable was not from the command line. Ignore it,
-      # but warn the user (except for BASH, which is always set by the calling BASH).
-      if test "xGIT" != xBASH; then
-        { $as_echo "$as_me:$LINENO: WARNING: Ignoring value of GIT from the environment. Use command line variables instead." >&5
-$as_echo "$as_me: WARNING: Ignoring value of GIT from the environment. Use command line variables instead." >&2;}
-      fi
-      # Try to locate tool using the code snippet
-      for ac_prog in git
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_path_GIT+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  case $GIT in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_GIT="$GIT" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_GIT="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-GIT=$ac_cv_path_GIT
-if test -n "$GIT"; then
-  { $as_echo "$as_me:$LINENO: result: $GIT" >&5
-$as_echo "$GIT" >&6; }
-else
-  { $as_echo "$as_me:$LINENO: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$GIT" && break
-done
-
-    else
-      # If it succeeded, then it was overridden by the user. We will use it
-      # for the tool.
-
-      # First remove it from the list of overridden variables, so we can test
-      # for unknown variables in the end.
-      CONFIGURE_OVERRIDDEN_VARIABLES="$try_remove_var"
-
-      # Check if the provided tool contains a complete path.
-      tool_specified="$GIT"
-      tool_basename="${tool_specified##*/}"
-      if test "x$tool_basename" = "x$tool_specified"; then
-        # A command without a complete path is provided, search $PATH.
-        { $as_echo "$as_me:$LINENO: Will search for user supplied tool GIT=$tool_basename" >&5
-$as_echo "$as_me: Will search for user supplied tool GIT=$tool_basename" >&6;}
-        # Extract the first word of "$tool_basename", so it can be a program name with args.
-set dummy $tool_basename; ac_word=$2
-{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_path_GIT+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  case $GIT in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_GIT="$GIT" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_GIT="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-GIT=$ac_cv_path_GIT
-if test -n "$GIT"; then
-  { $as_echo "$as_me:$LINENO: result: $GIT" >&5
-$as_echo "$GIT" >&6; }
-else
-  { $as_echo "$as_me:$LINENO: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-        if test "x$GIT" = x; then
-          { { $as_echo "$as_me:$LINENO: error: User supplied tool $tool_basename could not be found" >&5
-$as_echo "$as_me: error: User supplied tool $tool_basename could not be found" >&2;}
-   { (exit 1); exit 1; }; }
-        fi
-      else
-        # Otherwise we believe it is a complete path. Use it as it is.
-        { $as_echo "$as_me:$LINENO: Will use user supplied tool GIT=$tool_specified" >&5
-$as_echo "$as_me: Will use user supplied tool GIT=$tool_specified" >&6;}
-        { $as_echo "$as_me:$LINENO: checking for GIT" >&5
-$as_echo_n "checking for GIT... " >&6; }
-        if test ! -x "$tool_specified"; then
-          { $as_echo "$as_me:$LINENO: result: not found" >&5
-$as_echo "not found" >&6; }
-          { { $as_echo "$as_me:$LINENO: error: User supplied tool GIT=$tool_specified does not exist or is not executable" >&5
-$as_echo "$as_me: error: User supplied tool GIT=$tool_specified does not exist or is not executable" >&2;}
-   { (exit 1); exit 1; }; }
-        fi
-        { $as_echo "$as_me:$LINENO: result: $tool_specified" >&5
-$as_echo "$tool_specified" >&6; }
-      fi
-    fi
-  fi
-
-
-
-
-  # Publish this variable in the help.
-
-
   if test "x$STAT" = x; then
     # The variable is not set by user, try to locate tool using the code snippet
     for ac_prog in stat
@@ -25982,7 +25775,7 @@ $as_echo "$as_me: error: Cannot continue." >&2;}
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -26039,7 +25832,7 @@ $as_echo "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio instal
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -26114,7 +25907,7 @@ $as_echo "$as_me: error: Cannot locate a valid Visual Studio installation" >&2;}
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -26173,7 +25966,7 @@ $as_echo "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio instal
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -26234,7 +26027,7 @@ $as_echo "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio instal
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -26292,7 +26085,7 @@ $as_echo "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio instal
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -26349,7 +26142,7 @@ $as_echo "$as_me: Warning: None of $VCVARSFILES were found, Visual Studio instal
     VS_BASE="$unix_path"
   fi
 
-    # In VS 2017 and VS 2019, the default installation is in a subdir named after the edition.
+    # In VS 2017, the default installation is in a subdir named after the edition.
     # Find the first one present and use that.
     if test "x$VS_EDITIONS" != x; then
       for edition in $VS_EDITIONS; do
@@ -54424,7 +54217,7 @@ $as_echo "$as_me: error: The path of CYGWIN_VC_INSTALL_DIR, which resolves as \"
           POSSIBLE_MSVC_DLL="$CYGWIN_VC_INSTALL_DIR/redist/x86/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME"
         fi
       else
-        # Probe: Using well-known location from VS 2017 and VS 2019
+        # Probe: Using well-known location from VS 2017
         if test "x$OPENJDK_TARGET_CPU_BITS" = x64; then
           POSSIBLE_MSVC_DLL="`ls $CYGWIN_VC_INSTALL_DIR/Redist/MSVC/*/x64/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME`"
         else
@@ -55881,7 +55674,7 @@ $as_echo "$as_me: error: The path of CYGWIN_VC_INSTALL_DIR, which resolves as \"
           POSSIBLE_MSVC_DLL="$CYGWIN_VC_INSTALL_DIR/redist/x86/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME"
         fi
       else
-        # Probe: Using well-known location from VS 2017 and VS 2019
+        # Probe: Using well-known location from VS 2017
         if test "x$OPENJDK_TARGET_CPU_BITS" = x64; then
           POSSIBLE_MSVC_DLL="`ls $CYGWIN_VC_INSTALL_DIR/Redist/MSVC/*/x64/Microsoft.VC${VS_VERSION_INTERNAL}.CRT/$DLL_NAME`"
         else

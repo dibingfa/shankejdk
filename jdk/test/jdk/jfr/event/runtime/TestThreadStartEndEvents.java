@@ -25,17 +25,12 @@
 
 package jdk.jfr.event.runtime;
 
-import static jdk.test.lib.Asserts.assertEQ;
-import static jdk.test.lib.Asserts.assertNotNull;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import jdk.jfr.Recording;
 import jdk.jfr.consumer.RecordedEvent;
-import jdk.jfr.consumer.RecordedMethod;
-import jdk.jfr.consumer.RecordedStackTrace;
 import jdk.test.lib.jfr.EventNames;
 import jdk.test.lib.jfr.Events;
 
@@ -67,27 +62,19 @@ public class TestThreadStartEndEvents {
         recording.stop();
 
         int currThreadIndex = 0;
+        long currentThreadId = Thread.currentThread().getId();
         List<RecordedEvent> events = Events.fromRecording(recording);
-        events.sort((e1, e2) -> e1.getStartTime().compareTo(e2.getStartTime()));
         Events.hasEvents(events);
         for (RecordedEvent event : events) {
-            if (!event.getThread().getJavaName().startsWith(THREAD_NAME_PREFIX)) {
+            System.out.println("Event:" + event);
+            if (event.getThread().getJavaThreadId() != currentThreadId) {
                 continue;
             }
-            System.out.println("Event:" + event);
             // Threads should be started and stopped in the correct order.
             Events.assertEventThread(event, threads[currThreadIndex % threads.length]);
             String eventName = currThreadIndex < threads.length ? EVENT_NAME_THREAD_START : EVENT_NAME_THREAD_END;
             if (!eventName.equals(event.getEventType().getName())) {
-                throw new Exception("Expected event of type " + eventName + " but got " + event.getEventType().getName());
-            }
-
-            if (eventName == EVENT_NAME_THREAD_START) {
-                Events.assertEventThread(event, "parentThread", Thread.currentThread());
-                RecordedStackTrace stackTrace = event.getValue("stackTrace");
-                assertNotNull(stackTrace);
-                RecordedMethod topMethod = stackTrace.getFrames().get(0).getMethod();
-                assertEQ(topMethod.getName(), "startThread");
+                throw new Exception("Expected event of tyoe " + eventName + " but got " + event.getEventType().getName());
             }
             currThreadIndex++;
         }

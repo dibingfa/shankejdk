@@ -1149,19 +1149,13 @@ class InetAddress implements java.io.Serializable {
         }
 
         // if host is an IP address, we won't do further lookup
-        if (IPAddressUtil.digit(host.charAt(0), 16) != -1
+        if (Character.digit(host.charAt(0), 16) != -1
             || (host.charAt(0) == ':')) {
-            byte[] addr;
+            byte[] addr = null;
             int numericZone = -1;
             String ifname = null;
             // see if it is IPv4 address
-            try {
-                addr = IPAddressUtil.validateNumericFormatV4(host);
-            } catch (IllegalArgumentException iae) {
-                UnknownHostException uhe = new UnknownHostException(host);
-                uhe.initCause(iae);
-                throw uhe;
-            }
+            addr = IPAddressUtil.textToNumericFormatV4(host);
             if (addr == null) {
                 // This is supposed to be an IPv6 literal
                 // Check if a numeric or string zone id is present

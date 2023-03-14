@@ -58,11 +58,15 @@ import java.util.Vector;
 
 import org.w3c.dom.DOMError;
 import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.Entity;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.Notation;
 import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSSerializerFilter;
 import org.w3c.dom.traversal.NodeFilter;
@@ -121,7 +125,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author Elena Litani, IBM
  * @author Sunitha Reddy, Sun Microsystems
  * @see Serializer
- * @see org.w3c.dom.ls.LSSerializer
+ * @see LSSerializer
  */
 public abstract class BaseMarkupSerializer
     implements ContentHandler, DocumentHandler, LexicalHandler,
@@ -332,9 +336,6 @@ public abstract class BaseMarkupSerializer
         return true;
     }
 
-    protected void cleanup() {
-        fCurrentNode = null;
-    }
 
     protected void prepare()
         throws IOException
@@ -407,7 +408,6 @@ public abstract class BaseMarkupSerializer
         reset();
         prepare();
         serializeNode( elem );
-        cleanup();
         _printer.flush();
         if ( _printer.getException() != null )
             throw _printer.getException();
@@ -437,7 +437,7 @@ public abstract class BaseMarkupSerializer
      * writer and output format. Throws an exception only if
      * an I/O exception occured while serializing.
      *
-     * @param frag The document fragment to serialize
+     * @param elem The element to serialize
      * @throws IOException An I/O exception occured while
      *   serializing
      */
@@ -447,7 +447,6 @@ public abstract class BaseMarkupSerializer
         reset();
         prepare();
         serializeNode( frag );
-        cleanup();
         _printer.flush();
         if ( _printer.getException() != null )
             throw _printer.getException();
@@ -470,7 +469,6 @@ public abstract class BaseMarkupSerializer
         prepare();
         serializeNode( doc );
         serializePreRoot();
-        cleanup();
         _printer.flush();
         if ( _printer.getException() != null )
             throw _printer.getException();
@@ -531,22 +529,22 @@ public abstract class BaseMarkupSerializer
                 if (!XMLChar.isValid(ch)) {
                     // check if it is surrogate
                     if (++index < end) {
-                        surrogates(ch, chars[index],true);
+                        surrogates(ch, chars[index]);
                     }
                     else {
-                        fatalError("The character '"+ch+"' is an invalid XML character");
+                        fatalError("The character '"+(char)ch+"' is an invalid XML character");
                     }
                     continue;
-                }
-                if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0x7F ) ||
-                    ch == '\n' || ch == '\r' || ch == '\t' ) {
-                    _printer.printText(ch);
-                }
-                else {
-                    // The character is not printable -- split CDATA section
-                    _printer.printText("]]>&#x");
-                    _printer.printText(Integer.toHexString(ch));
-                    _printer.printText(";<![CDATA[");
+                } else {
+                    if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
+                        ch == '\n' || ch == '\r' || ch == '\t' ) {
+                        _printer.printText((char)ch);
+                    } else {
+                        // The character is not printable -- split CDATA section
+                        _printer.printText("]]>&#x");
+                        _printer.printText(Integer.toHexString(ch));
+                        _printer.printText(";<![CDATA[");
+                    }
                 }
             }
             _printer.setNextIndent( saveIndent );
@@ -1196,6 +1194,11 @@ public abstract class BaseMarkupSerializer
         }
         case Node.DOCUMENT_NODE : {
             DocumentType      docType;
+            DOMImplementation domImpl;
+            NamedNodeMap      map;
+            Entity            entity;
+            Notation          notation;
+            int               i;
 
             serializeDocument();
 
@@ -1204,6 +1207,7 @@ public abstract class BaseMarkupSerializer
             docType = ( (Document) node ).getDoctype();
             if (docType != null) {
                 // DOM Level 2 (or higher)
+                domImpl = ( (Document) node ).getImplementation();
                 try {
                     String internal;
 
@@ -1367,7 +1371,7 @@ public abstract class BaseMarkupSerializer
      * state with <tt>empty</tt> and <tt>afterElement</tt> set to false.
      *
      * @return The current element state
-     * @throws IOException An I/O exception occurred while
+     * @throws IOException An I/O exception occured while
      *   serializing
      */
     protected ElementState content()
@@ -1410,6 +1414,7 @@ public abstract class BaseMarkupSerializer
      * whether the text is printed as CDATA or unescaped.
      *
      * @param text The text to print
+     * @param unescaped True is should print unescaped
      * @throws IOException An I/O exception occured while
      *   serializing
      */
@@ -1424,6 +1429,9 @@ public abstract class BaseMarkupSerializer
         // state) or whether we are inside a CDATA section or entity.
 
         if ( state.inCData || state.doCData ) {
+            int          index;
+            int          saveIndent;
+
             // Print a CDATA section. The text is not escaped, but ']]>'
             // appearing in the code must be identified and dealt with.
             // The contents of a text node is considered space preserving.
@@ -1431,7 +1439,7 @@ public abstract class BaseMarkupSerializer
                 _printer.printText("<![CDATA[");
                 state.inCData = true;
             }
-            int saveIndent = _printer.getNextIndent();
+            saveIndent = _printer.getNextIndent();
             _printer.setNextIndent( 0 );
             printCDATAText( text);
             _printer.setNextIndent( saveIndent );
@@ -1534,10 +1542,12 @@ public abstract class BaseMarkupSerializer
                             fDOMErrorHandler.handleError(fDOMError);
                             throw new LSException(LSException.SERIALIZE_ERR, msg);
                         }
-                        // issue error
-                        modifyDOMError(msg, DOMError.SEVERITY_ERROR, "cdata-section-not-splitted", fCurrentNode);
-                        if (!fDOMErrorHandler.handleError(fDOMError)) {
-                            throw new LSException(LSException.SERIALIZE_ERR, msg);
+                        else {
+                            // issue error
+                            modifyDOMError(msg, DOMError.SEVERITY_ERROR, "cdata-section-not-splitted", fCurrentNode);
+                            if (!fDOMErrorHandler.handleError(fDOMError)) {
+                                throw new LSException(LSException.SERIALIZE_ERR, msg);
+                            }
                         }
                     } else {
                         // issue warning
@@ -1562,29 +1572,29 @@ public abstract class BaseMarkupSerializer
             if (!XMLChar.isValid(ch)) {
                 // check if it is surrogate
                 if (++index <length) {
-                    surrogates(ch, text.charAt(index),true);
+                    surrogates(ch, text.charAt(index));
                 }
                 else {
-                    fatalError("The character '"+ch+"' is an invalid XML character");
+                    fatalError("The character '"+(char)ch+"' is an invalid XML character");
                 }
                 continue;
-            }
-            if ( ( ch >= ' ' && _encodingInfo.isPrintable(ch) && ch != 0x7F ) ||
-                 ch == '\n' || ch == '\r' || ch == '\t' ) {
-                _printer.printText(ch);
-            }
-            else {
+            } else {
+                if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
+                     ch == '\n' || ch == '\r' || ch == '\t' ) {
+                    _printer.printText((char)ch);
+                } else {
 
-                // The character is not printable -- split CDATA section
-                _printer.printText("]]>&#x");
-                _printer.printText(Integer.toHexString(ch));
-                _printer.printText(";<![CDATA[");
+                    // The character is not printable -- split CDATA section
+                    _printer.printText("]]>&#x");
+                    _printer.printText(Integer.toHexString(ch));
+                    _printer.printText(";<![CDATA[");
+                }
             }
         }
     }
 
 
-    protected void surrogates(int high, int low, boolean inContent) throws IOException{
+    protected void surrogates(int high, int low) throws IOException{
         if (XMLChar.isHighSurrogate(high)) {
             if (!XMLChar.isLowSurrogate(low)) {
                 //Invalid XML
@@ -1597,7 +1607,7 @@ public abstract class BaseMarkupSerializer
                     fatalError("The character '"+(char)supplemental+"' is an invalid XML character");
                 }
                 else {
-                    if (inContent && content().inCData) {
+                    if (content().inCData ) {
                         _printer.printText("]]>&#x");
                         _printer.printText(Integer.toHexString(supplemental));
                         _printer.printText(";<![CDATA[");
@@ -1622,9 +1632,7 @@ public abstract class BaseMarkupSerializer
      * Multiple spaces are printed as such, but spaces at beginning
      * of line are removed.
      *
-     * @param chars The text to print
-     * @param start The start offset
-     * @param length The number of characters
+     * @param text The text to print
      * @param preserveSpace Space preserving flag
      * @param unescaped Print unescaped
      */
@@ -1632,6 +1640,8 @@ public abstract class BaseMarkupSerializer
                                     boolean preserveSpace, boolean unescaped )
         throws IOException
     {
+        int index;
+        char ch;
 
         if ( preserveSpace ) {
             // Preserving spaces: the text must print exactly as it is,
@@ -1639,14 +1649,12 @@ public abstract class BaseMarkupSerializer
             // consolidating spaces. If a line terminator is used, a line
             // break will occur.
             while ( length-- > 0 ) {
-                char ch = chars[ start ];
+                ch = chars[ start ];
                 ++start;
-                if ( ch == '\n' || ch == '\r' || unescaped ) {
+                if ( ch == '\n' || ch == '\r' || unescaped )
                     _printer.printText( ch );
-                }
-                else {
+                else
                     printEscaped( ch );
-                }
             }
         } else {
             // Not preserving spaces: print one part at a time, and
@@ -1655,17 +1663,14 @@ public abstract class BaseMarkupSerializer
             // by printing mechanism. Line terminator is treated
             // no different than other text part.
             while ( length-- > 0 ) {
-                char ch = chars[ start ];
+                ch = chars[ start ];
                 ++start;
-                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' ) {
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
                     _printer.printSpace();
-                }
-                else if ( unescaped ) {
+                else if ( unescaped )
                     _printer.printText( ch );
-                }
-                else {
+                else
                     printEscaped( ch );
-                }
             }
         }
     }
@@ -1697,15 +1702,12 @@ public abstract class BaseMarkupSerializer
             // no different than other text part.
             for ( index = 0 ; index < text.length() ; ++index ) {
                 ch = text.charAt( index );
-                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' ) {
+                if ( ch == ' ' || ch == '\f' || ch == '\t' || ch == '\n' || ch == '\r' )
                     _printer.printSpace();
-                }
-                else if ( unescaped ) {
+                else if ( unescaped )
                     _printer.printText( ch );
-                }
-                else {
+                else
                     printEscaped( ch );
-                }
             }
         }
     }
@@ -1748,7 +1750,7 @@ public abstract class BaseMarkupSerializer
             _printer.printText( '&' );
             _printer.printText( charRef );
             _printer.printText( ';' );
-        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0x7F ) ||
+        } else if ( ( ch >= ' ' && _encodingInfo.isPrintable((char)ch) && ch != 0xF7 ) ||
                     ch == '\n' || ch == '\r' || ch == '\t' ) {
             // Non printables are below ASCII space but not tab or line
             // terminator, ASCII delete, or above a certain Unicode threshold.
@@ -1869,13 +1871,14 @@ public abstract class BaseMarkupSerializer
     {
         if ( _elementStateCount > 0 ) {
             /*Corrected by David Blondeau (blondeau@intalio.com)*/
-            _prefixes = null;
-            //_prefixes = _elementStates[ _elementStateCount ].prefixes;
+                _prefixes = null;
+                //_prefixes = _elementStates[ _elementStateCount ].prefixes;
             -- _elementStateCount;
             return _elementStates[ _elementStateCount ];
+        } else {
+            String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "Internal", null);
+            throw new IllegalStateException(msg);
         }
-        String msg = DOMMessageFormatter.formatMessage(DOMMessageFormatter.SERIALIZER_DOMAIN, "Internal", null);
-        throw new IllegalStateException(msg);
     }
 
 
@@ -1886,14 +1889,11 @@ public abstract class BaseMarkupSerializer
      *
      * @return True if in the state of the document
      */
-    protected boolean isDocumentState() {
+    protected boolean isDocumentState()
+    {
         return _elementStateCount == 0;
     }
 
-    /** Clears document state. **/
-    final void clearDocumentState() {
-        _elementStateCount = 0;
-    }
 
     /**
      * Returns the namespace prefix for the specified URI.
@@ -1912,14 +1912,15 @@ public abstract class BaseMarkupSerializer
             if ( prefix != null )
                 return prefix;
         }
-        if ( _elementStateCount == 0 ) {
+        if ( _elementStateCount == 0 )
             return null;
-        }
-        for ( int i = _elementStateCount ; i > 0 ; --i ) {
-            if ( _elementStates[ i ].prefixes != null ) {
-                prefix = (String) _elementStates[ i ].prefixes.get( namespaceURI );
-                if ( prefix != null )
-                    return prefix;
+        else {
+            for ( int i = _elementStateCount ; i > 0 ; --i ) {
+                if ( _elementStates[ i ].prefixes != null ) {
+                    prefix = (String) _elementStates[ i ].prefixes.get( namespaceURI );
+                    if ( prefix != null )
+                        return prefix;
+                }
             }
         }
         return null;

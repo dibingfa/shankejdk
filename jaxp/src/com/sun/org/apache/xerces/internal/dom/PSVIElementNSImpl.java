@@ -35,6 +35,7 @@ import com.sun.org.apache.xerces.internal.xs.*;
  *
  * @author Sandy Gao, IBM
  *
+ * @version $Id: PSVIElementNSImpl.java,v 1.6 2010/08/20 18:51:54 joehw Exp $
  */
 public class PSVIElementNSImpl extends ElementNSImpl implements ElementPSVI {
 

@@ -3,12 +3,11 @@
  * DO NOT REMOVE OR ALTER!
  */
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2005 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -18,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.sun.org.apache.xerces.internal.xpointer;
 
 import com.sun.org.apache.xerces.internal.impl.Constants;
@@ -39,8 +37,9 @@ import com.sun.org.apache.xerces.internal.xs.XSTypeDefinition;
  * in document order that has a matching NCName as an identifier.
  * </p>
  *
+ *
  */
-final class ShortHandPointer implements XPointerPart {
+class ShortHandPointer implements XPointerPart {
 
     // The name of the ShortHand pointer
     private String fShortHandPointer;
@@ -262,7 +261,7 @@ final class ShortHandPointer implements XPointerPart {
      * @see com.sun.org.apache.xerces.internal.xpointer.XPointerPart#isChildFragmentResolved()
      */
     public boolean isChildFragmentResolved() {
-        return fIsFragmentResolved && ( fMatchingChildCount >  0);
+        return fIsFragmentResolved & ( fMatchingChildCount >  0);
     }
 
     /**

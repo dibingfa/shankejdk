@@ -49,7 +49,6 @@ import jdk.jfr.AnnotationElement;
 import jdk.jfr.SettingDescriptor;
 import jdk.jfr.ValueDescriptor;
 import jdk.jfr.internal.MetadataDescriptor.Element;
-import jdk.jfr.internal.consumer.RecordingInput;
 
 /**
  * Parses metadata.
@@ -65,7 +64,6 @@ final class MetadataReader {
     public MetadataReader(DataInput input) throws IOException {
         this.input = input;
         int size = input.readInt();
-        ((RecordingInput)input).require(size, "Metadata string pool size %d exceeds available data" );
         this.pool = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             this.pool.add(input.readUTF());

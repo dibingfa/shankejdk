@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,7 +23,7 @@
 
  /*
  * @test
- * @bug 8161016 8183369
+ * @bug 8161016
  * @summary When proxy is set HttpURLConnection should not use DIRECT connection.
  * @run main/othervm HttpURLConWithProxy
  */
@@ -35,13 +35,9 @@ import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URL;
-import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
 
 public class HttpURLConWithProxy {
 
@@ -51,56 +47,36 @@ public class HttpURLConWithProxy {
 
         System.setProperty("http.proxyHost", "1.1.1.1");
         System.setProperty("http.proxyPort", "1111");
-        String HTTPLOG = "";
-        Logger.getLogger(HTTPLOG).setLevel(Level.ALL);
-        Handler h = new ProxyHandler();
-        h.setLevel(Level.ALL);
-        Logger.getLogger(HTTPLOG).addHandler(h);
 
         ServerSocket ss;
         URL url;
-        HttpURLConnection con;
+        URLConnection con;
 
         // Test1: using Proxy set by System Property:
         try {
             ss = new ServerSocket(0);
             url = new URL("http://localhost:" + ss.getLocalPort());
-            con = (HttpURLConnection) url.openConnection();
+            con = url.openConnection();
             con.setConnectTimeout(10 * 1000);
             con.connect();
-            if(con.usingProxy()){
-                System.out.println("Test1 Passed with: Connection succeeded with proxy");
-            } else {
-                throw new RuntimeException("Shouldn't use DIRECT connection "
-                        + "when proxy is invalid/down");
-            }
+            throw new RuntimeException("Shouldn't use DIRECT connection "
+                    + "when proxy is invalid/down");
         } catch (IOException ie) {
-            if(!ProxyHandler.proxyRetried) {
-                throw new RuntimeException("Connection not retried with proxy");
-            }
             System.out.println("Test1 Passed with: " + ie.getMessage());
         }
 
         // Test2: using custom ProxySelector implementation
-        ProxyHandler.proxyRetried = false;
         MyProxySelector myProxySel = new MyProxySelector();
         ProxySelector.setDefault(myProxySel);
         try {
             ss = new ServerSocket(0);
             url = new URL("http://localhost:" + ss.getLocalPort());
-            con = (HttpURLConnection) url.openConnection();
+            con = url.openConnection();
             con.setConnectTimeout(10 * 1000);
             con.connect();
-            if(con.usingProxy()){
-                System.out.println("Test2 Passed with: Connection succeeded with proxy");
-            } else {
-                throw new RuntimeException("Shouldn't use DIRECT connection "
-                        + "when proxy is invalid/down");
-            }
+            throw new RuntimeException("Shouldn't use DIRECT connection "
+                    + "when proxy is invalid/down");
         } catch (IOException ie) {
-            if(!ProxyHandler.proxyRetried) {
-                throw new RuntimeException("Connection not retried with proxy");
-            }
             System.out.println("Test2 Passed with: " + ie.getMessage());
         }
     }
@@ -126,24 +102,5 @@ class MyProxySelector extends ProxySelector {
     @Override
     public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
         // System.out.println("MyProxySelector.connectFailed(): "+sa);
-    }
-}
-
-class ProxyHandler extends Handler {
-    public static boolean proxyRetried = false;
-
-    @Override
-    public void publish(LogRecord record) {
-        if (record.getMessage().contains("Retrying with proxy")) {
-            proxyRetried = true;
-        }
-    }
-
-    @Override
-    public void flush() {
-    }
-
-    @Override
-    public void close() throws SecurityException {
     }
 }
