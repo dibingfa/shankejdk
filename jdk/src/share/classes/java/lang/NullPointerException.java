@@ -69,4 +69,15 @@ class NullPointerException extends RuntimeException {
     public NullPointerException(String s) {
         super(s);
     }
+
+    public String getMessage() {
+        String message = super.getMessage();
+        if (message == null) {
+            return getExtendedNPEMessage();
+        }
+        return message;
+    }
+
+    private native String getExtendedNPEMessage();
+
 }

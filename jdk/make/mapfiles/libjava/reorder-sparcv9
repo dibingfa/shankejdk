@@ -35,6 +35,7 @@ text: .text%Java_java_lang_Double_doubleToLongBits;
 text: .text%Java_java_lang_ClassLoader_findLoadedClass;
 text: .text%Java_java_lang_ClassLoader_findBootstrapClass;
 text: .text%VerifyClassCodes;
+text: .text%Java_java_lang_NullPointerException_getExtendedNPEMessage;
 text: .text%Java_java_lang_Throwable_fillInStackTrace;
 text: .text%Java_java_lang_System_setOut0;
 text: .text%Java_java_lang_System_setErr0;

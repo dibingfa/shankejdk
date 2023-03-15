@@ -63,6 +63,7 @@ text: .text%JNU_CopyObjectArray;
 text: .text%Java_java_lang_String_intern;
 text: .text%Java_java_lang_ClassLoader_findLoadedClass;
 text: .text%Java_java_lang_ClassLoader_findBootstrapClass;
+text: .text%Java_java_lang_NullPointerException_getExtendedNPEMessage;
 text: .text%Java_java_lang_Throwable_fillInStackTrace;
 text: .text%Java_java_security_AccessController_doPrivileged__Ljava_security_PrivilegedExceptionAction_2Ljava_security_AccessControlContext_2;
 text: .text%Java_java_io_UnixFileSystem_getLastModifiedTime;
