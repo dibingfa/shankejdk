@@ -83,6 +83,7 @@
                 _JVM_DumpThreads
                 _JVM_EnableCompiler
                 _JVM_Exit
+                _JVM_GetExtendedNPEMessage
                 _JVM_FillInStackTrace
                 _JVM_FindClassFromCaller
                 _JVM_FindClassFromClass

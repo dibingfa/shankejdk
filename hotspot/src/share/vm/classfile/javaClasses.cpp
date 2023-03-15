@@ -1872,6 +1872,10 @@ oop java_lang_Throwable::get_stack_trace_element(oop throwable, int index, TRAPS
   return element;
 }
 
+bool java_lang_Throwable::get_top_method_and_bci(oop throwable, Method** method, int* bci) {
+  return false;
+}
+
 oop java_lang_StackTraceElement::create(Handle mirror, int method_id,
                                         int version, int bci, int cpref, TRAPS) {
   // Allocate java.lang.StackTraceElement instance

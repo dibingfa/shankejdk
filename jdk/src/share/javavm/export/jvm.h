@@ -197,6 +197,14 @@ JNIEXPORT jboolean JNICALL
 JVM_IsNaN(jdouble d);
 
 /*
+ * java.lang.NullPointerException
+ */
+
+JNIEXPORT jstring JNICALL
+JVM_GetExtendedNPEMessage(JNIEnv *env, jthrowable throwable);
+
+
+/*
  * java.lang.Throwable
  */
 JNIEXPORT void JNICALL

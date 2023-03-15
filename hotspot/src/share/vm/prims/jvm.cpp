@@ -37,6 +37,7 @@
 #include "classfile/vmSymbols.hpp"
 #include "gc_interface/collectedHeap.inline.hpp"
 #include "interpreter/bytecode.hpp"
+#include "interpreter/bytecodeUtils.hpp"
 #include "jfr/jfrEvents.hpp"
 #include "memory/oopFactory.hpp"
 #include "memory/referenceType.hpp"
@@ -535,6 +536,29 @@ JVM_ENTRY_NO_ENV(jboolean, JVM_IsUseContainerSupport(void))
   return JNI_FALSE;
 JVM_END
 
+// java.lang.NullPointerException ///////////////////////////////////////////
+
+JVM_ENTRY(jstring, JVM_GetExtendedNPEMessage(JNIEnv *env, jthrowable throwable))
+  oop exc = JNIHandles::resolve_non_null(throwable);
+
+  Method* method;
+  int bci;
+  if (!java_lang_Throwable::get_top_method_and_bci(exc, &method, &bci)) {
+    return NULL;
+  }
+  if (method->is_native()) {
+    return NULL;
+  }
+
+  stringStream ss;
+  bool ok = BytecodeUtils::get_NPE_message_at(&ss, method, bci);
+  if (ok) {
+    oop result = java_lang_String::create_oop_from_str(ss.base(), CHECK_0);
+    return (jstring) JNIHandles::make_local(env, result);
+  } else {
+    return NULL;
+  }
+JVM_END
 
 
 // java.lang.Throwable //////////////////////////////////////////////////////
